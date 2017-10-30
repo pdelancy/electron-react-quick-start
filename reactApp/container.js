@@ -3,11 +3,6 @@ var ReactDOM = require('react-dom');
 import {Editor, EditorState, RichUtils} from 'draft-js';
 
 
-
-const yellow = {
-  color: 'Yellow'
-};
-
 class Container extends React.Component {
   constructor(props) {
     super(props);
