@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ColorControls from './colorcontrol';
 import {Editor, EditorState, Modifier, RichUtils} from 'draft-js';
 
 const styles = {
@@ -66,6 +65,8 @@ class MyEditor extends React.Component {
     }
     this.onChange(nextEditorState);
   }
+
+
   _onBoldClick() {
     this.onChange(RichUtils.toggleInlineStyle(this.state.editorState,'BOLD'));
   }
@@ -86,11 +87,13 @@ class MyEditor extends React.Component {
           onToggle={this.toggleColor}
         />
 
+
         <button onClick={this._onBoldClick.bind(this)}>Bold</button>
         <button onClick={this._onItalicizeClick.bind(this)}>Italicize</button>
         <button onClick={this._onUnderlineClick.bind(this)}>Underline</button>
-        <div style={styles.editor} onClick={this.focus}>
 
+
+        <div style={styles.editor} onClick={this.focus}>
           <Editor
             customStyleMap={colorStyleMap}
             editorState={editorState}
@@ -104,6 +107,48 @@ class MyEditor extends React.Component {
   }
 }
 
+class StyleButton extends React.Component {
+  constructor(props) {
+    super(props);
+    this.onToggle = (e) => {
+      e.preventDefault();
+      this.props.onToggle(this.props.style);
+    };
+  }
+  render() {
+    return (
+      <span style={styles.styleButton} onMouseDown={this.onToggle}>
+        {this.props.label}
+      </span>
+    );
+  }
+}
+var COLORS = [
+  {label: 'Red', style: 'red'},
+  {label: 'Orange', style: 'orange'},
+  {label: 'Yellow', style: 'yellow'},
+  {label: 'Green', style: 'green'},
+  {label: 'Blue', style: 'blue'},
+  {label: 'Indigo', style: 'indigo'},
+  {label: 'Violet', style: 'violet'},
+];
+
+
+const ColorControls = (props) => {
+  var currentStyle = props.editorState.getCurrentInlineStyle();
+  return (
+    <div style={styles.controls}>
+      {COLORS.map(type =>
+        <StyleButton
+          active={currentStyle.has(type.style)}
+          label={type.label}
+          onToggle={props.onToggle}
+          style={type.style}
+        />
+      )}
+    </div>
+  );
+};
 // This object provides the styling information for our custom color
 // styles.
 const colorStyleMap = {
@@ -134,8 +179,7 @@ const colorStyleMap = {
 fetch('http://localhost:3000')
 .then(resp => resp.text())
 .then(text => console.log(text))
-.catch(err => {throw err;});
-
+.catch(err => {throw err})
 
 ReactDOM.render(<MyEditor />,
    document.getElementById('root'));
