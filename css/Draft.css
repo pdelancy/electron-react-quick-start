@@ -1,0 +1,9 @@
+.public-DraftStyleDefault-block{
+    display: flex;
+    background-color: 'blue';
+    padding: 5px;
+    height: 20vh;
+    width: 90vw;
+    text-align: center;
+    border: solid black 2px;
+};
