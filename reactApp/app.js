@@ -2,35 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Editor, EditorState, Modifier, RichUtils} from 'draft-js';
 
-const styles = {
-  root: {
-    fontFamily: '\'Georgia\', serif',
-    fontSize: 14,
-    padding: 20,
-    width: 600,
-  },
-  editor: {
-    borderTop: '1px solid #ddd',
-    cursor: 'text',
-    fontSize: 16,
-    marginTop: 20,
-    minHeight: 400,
-    paddingTop: 20,
-  },
-  controls: {
-    fontFamily: '\'Helvetica\', sans-serif',
-    fontSize: 14,
-    marginBottom: 10,
-    userSelect: 'none',
-  },
-  styleButton: {
-    color: '#999',
-    cursor: 'pointer',
-    marginRight: 16,
-    padding: '2px 0',
-  },
-};
-
 class MyEditor extends React.Component {
   constructor(props) {
     super(props);
@@ -38,6 +9,12 @@ class MyEditor extends React.Component {
     this.focus = () => this.editor.focus();
     this.onChange = (editorState) => this.setState({editorState});
     this.toggleColor = (toggledColor) => this._toggleColor(toggledColor);
+    this.onTab = this._onTab.bind(this);
+    this.toggleBlockType = this._toggleBlockType.bind(this);
+  }
+  _onTab(e) {
+    const maxDepth = 4;
+    this.onChange(RichUtils.onTab(e, this.state.editorState, maxDepth));
   }
   _toggleColor(toggledColor) {
     const {editorState} = this.state;
@@ -73,11 +50,22 @@ class MyEditor extends React.Component {
   _onUnderlineClick() {
     this.onChange(RichUtils.toggleInlineStyle(this.state.editorState,'UNDERLINE'));
   }
-
+  _toggleBlockType(blockType) {
+    this.onChange(
+      RichUtils.toggleBlockType(
+        this.state.editorState,
+        blockType
+      )
+    );
+  }
   render() {
     const {editorState} = this.state;
     return (
       <div style={styles.root}>
+        <BlockStyleControls
+          editorState={editorState}
+          onToggle={this.toggleBlockType}
+        />
         <ColorControls
           editorState={editorState}
           onToggle={this.toggleColor}
@@ -90,8 +78,10 @@ class MyEditor extends React.Component {
             customStyleMap={colorStyleMap}
             editorState={editorState}
             onChange={this.onChange}
-            placeholder="Write something colorful..."
+            onTab={this.onTab}
+            placeholder="Write something..."
             ref={(ref) => this.editor = ref}
+            spellCheck={true}
           />
         </div>
       </div>
@@ -139,30 +129,71 @@ const ColorControls = (props) => {
     </div>
   );
 };
-// This object provides the styling information for our custom color
-// styles.
+
 const colorStyleMap = {
-  red: {
-    color: 'rgba(255, 0, 0, 1.0)',
+  red: {color: 'rgba(255, 0, 0, 1.0)'},
+  orange: {color: 'rgba(255, 127, 0, 1.0)'},
+  yellow: {color: 'rgba(180, 180, 0, 1.0)'},
+  green: {color: 'rgba(0, 180, 0, 1.0)'},
+  blue: {color: 'rgba(0, 0, 255, 1.0)'},
+  indigo: {color: 'rgba(75, 0, 130, 1.0)'},
+  violet: {color: 'rgba(127, 0, 255, 1.0)'}
+};
+
+const styles = {
+  root: {
+    fontFamily: '\'Georgia\', serif',
+    fontSize: 14,
+    padding: 20,
+    width: 600,
   },
-  orange: {
-    color: 'rgba(255, 127, 0, 1.0)',
+  editor: {
+    borderTop: '1px solid #ddd',
+    cursor: 'text',
+    fontSize: 16,
+    marginTop: 20,
+    minHeight: 400,
+    paddingTop: 20,
   },
-  yellow: {
-    color: 'rgba(180, 180, 0, 1.0)',
+  controls: {
+    fontFamily: '\'Helvetica\', sans-serif',
+    fontSize: 14,
+    marginBottom: 10,
+    userSelect: 'none',
   },
-  green: {
-    color: 'rgba(0, 180, 0, 1.0)',
+  styleButton: {
+    color: '#999',
+    cursor: 'pointer',
+    marginRight: 16,
+    padding: '2px 0',
   },
-  blue: {
-    color: 'rgba(0, 0, 255, 1.0)',
-  },
-  indigo: {
-    color: 'rgba(75, 0, 130, 1.0)',
-  },
-  violet: {
-    color: 'rgba(127, 0, 255, 1.0)',
-  },
+};
+function getBlockStyle(block) {
+  switch (block.getType()) {
+    case 'blockquote': return 'RichEditor-blockquote';
+    default: return null;
+  }
+}
+const BLOCK_TYPES = [
+  {label: 'UL', style: 'unordered-list-item'},
+  {label: 'OL', style: 'ordered-list-item'}
+];
+const BlockStyleControls = (props) => {
+  const {editorState} = props;
+  const selection = editorState.getSelection();
+  const blockType = editorState.getCurrentContent().getBlockForKey(selection.getStartKey()).getType();
+  return (
+    <div className="RichEditor-controls">
+      {BLOCK_TYPES.map((type) =>
+        <StyleButton
+          active={type.style === blockType}
+          label={type.label}
+          onToggle={props.onToggle}
+          style={type.style}
+        />
+      )}
+    </div>
+  );
 };
 
 /* This can check if your electron app can communicate with your backend */
