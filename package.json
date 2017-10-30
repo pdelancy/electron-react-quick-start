@@ -33,9 +33,17 @@
     "webpack-dev-server": "^2.6.0"
   },
   "dependencies": {
+<<<<<<< HEAD
     "draft-js": "^0.10.4",
     "express": "^4.15.3",
     "react": "^15.6.2",
     "react-dom": "^15.6.1"
+=======
+    "babel-polyfill": "^6.26.0",
+    "draft-js": "^0.10.4",
+    "express": "^4.15.3",
+    "react": "^15.6.2",
+    "react-dom": "^15.6.2"
+>>>>>>> 5ffafd30cb7ccf9baf470fc2c895b9e97c75572d
   }
 }
