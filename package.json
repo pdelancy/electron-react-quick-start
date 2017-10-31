@@ -33,11 +33,21 @@
     "webpack-dev-server": "^2.6.0"
   },
   "dependencies": {
+<<<<<<< HEAD
+    "babel-polyfill": "^6.26.0",
+    "bootstrap": "^3.3.7",
+    "draft-js": "^0.10.4",
+    "express": "^4.15.3",
+    "material-design-icons": "^3.0.1",
+    "material-ui": "^0.19.4",
+    "material-ui-icons": "^1.0.0-beta.17",
+=======
     "css-loader": "^0.28.7",
     "draft-js": "^0.10.4",
     "express": "^4.15.3",
     "immutable": "^3.8.2",
     "material-ui": "^0.19.4",
+>>>>>>> master
     "react": "^15.6.2",
     "react-color": "^2.13.8",
     "react-dom": "^15.6.2",
