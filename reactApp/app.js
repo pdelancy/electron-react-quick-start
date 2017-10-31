@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import {Editor, EditorState, Modifier, RichUtils} from 'draft-js';
+import { formatAlignLeft, formatAlignRight } from 'material-ui-icons';
+import FontIcon from 'material-ui/FontIcon';
 
 const styles = {
   root: {
@@ -29,28 +32,47 @@ const styles = {
     marginRight: 16,
     padding: '2px 0',
   },
+  icon: {
+    margin: 10,
+  }
+
 };
 
 class MyEditor extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {editorState: EditorState.createEmpty()};
+    this.state = {
+      editorState: EditorState.createEmpty(),
+      alignment: 'left'
+    };
     this.focus = () => this.editor.focus();
     this.onChange = (editorState) => this.setState({editorState});
     this.toggleColor = (toggledColor) => this._toggleColor(toggledColor);
   }
+
+  blockStyleFn(contentBlock) {
+    return contentBlock.getType();
+  }
+
+  blockStyle(styleName){
+    var {editorState} = this.state;
+    var selectionState = editorState.getSelection();
+    this.onChange(RichUtils.toggleBlockType(EditorState.forceSelection(editorState, selectionState), styleName));
+  }
+
   _toggleColor(toggledColor) {
     const {editorState} = this.state;
     const selection = editorState.getSelection();
     const nextContentState = Object.keys(colorStyleMap).reduce((contentState, color) => {
-        return Modifier.removeInlineStyle(contentState, selection, color)
-      }, editorState.getCurrentContent());
+      return Modifier.removeInlineStyle(contentState, selection, color);
+    }, editorState.getCurrentContent());
     let nextEditorState = EditorState.push(
       editorState,
       nextContentState,
       'change-inline-style'
     );
     const currentStyle = editorState.getCurrentInlineStyle();
+    console.log(currentStyle);
     if (selection.isCollapsed()) {
       nextEditorState = currentStyle.reduce((state, color) => {
         return RichUtils.toggleInlineStyle(state, color);
@@ -82,9 +104,18 @@ class MyEditor extends React.Component {
           editorState={editorState}
           onToggle={this.toggleColor}
         />
-        <button onClick={this._onBoldClick.bind(this)}>Bold</button>
-        <button onClick={this._onItalicizeClick.bind(this)}>Italicize</button>
-        <button onClick={this._onUnderlineClick.bind(this)}>Underline</button>
+        <div>
+          <button onClick={this._onBoldClick.bind(this)}>Bold</button>
+          <button onClick={this._onItalicizeClick.bind(this)}>Italicize</button>
+          <button onClick={this._onUnderlineClick.bind(this)}>Underline</button>
+          <button value = 'ordered-list-item' onClick={(e)=>this.blockStyle(e.target.value)}>Ordered List</button>
+          <button value = 'unordered-list-item' onClick={(e)=>this.blockStyle(e.target.value)}>Unordered List</button>
+          <button value="textAlignLeft" onClick={(e)=>this.blockStyle(e.target.value)}> </button>
+          <button value="textAlignCenter" onClick={(e)=>this.blockStyle(e.target.value)}></button>
+          <button value="textAlignRight" onClick={(e)=>this.blockStyle(e.target.value)}></button>
+        </div>
+
+
         <div style={styles.editor} onClick={this.focus}>
           <Editor
             customStyleMap={colorStyleMap}
@@ -92,6 +123,7 @@ class MyEditor extends React.Component {
             onChange={this.onChange}
             placeholder="Write something colorful..."
             ref={(ref) => this.editor = ref}
+            blockStyleFn = {this.blockStyleFn.bind(this)}
           />
         </div>
       </div>
@@ -165,15 +197,19 @@ const colorStyleMap = {
   },
 };
 
-ReactDOM.render(
-  <MyEditor />,
-  document.getElementById('root')
-);
+// ReactDOM.render(
+//   <MyEditor />,
+//   document.getElementById('root')
+// );
 /* This can check if your electron app can communicate with your backend */
 fetch('http://localhost:3000')
 .then(resp => resp.text())
 .then(text => console.log(text))
-.catch(err => {throw err})
+.catch(err => {throw err;
+});
 
-ReactDOM.render(<MyEditor />,
+ReactDOM.render(
+  <MuiThemeProvider>
+    <MyEditor />
+  </MuiThemeProvider>,
    document.getElementById('root'));
