@@ -87,6 +87,16 @@ app.post('/newdoc', (req, res) => {
   })
 })
 
+app.post('/updatedoc', (req, res) => {
+  Document.findById(req.body.id, (err, doc) => {
+    if (err) {
+      console.error(err);
+    } else {
+      doc.body = req.body.body;
+      res.send('body updated');
+    }
+  })
+})
 
 app.use((req, res, next) => {
   if (req.user) {

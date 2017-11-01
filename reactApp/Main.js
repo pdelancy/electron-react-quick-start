@@ -9,6 +9,7 @@ import {CirclePicker} from 'react-color';
 import Popover, {PopoverAnimationVertical} from 'material-ui/Popover';
 import {Editor, EditorState, Modifier, RichUtils, DefaultDraftBlockRenderMap} from 'draft-js';
 import {Map} from 'immutable';
+import axios from 'axios';
 
 import {Route, Link} from 'react-router-dom';
 
@@ -134,7 +135,7 @@ class Main extends React.Component {
     return(
       <RaisedButton
         backgroundColor = {String(colors.gray200)}
-        // onMouseDown ={()=>()}
+        // onMouseDown ={() => this.onSave()}
         icon={<FontIcon className="material-icons"> save </FontIcon>}
       />
     );
@@ -163,7 +164,7 @@ class Main extends React.Component {
               ref = 'editor'
               blockRenderMap={myBlockTypes}
               customStyleMap = {this.state.inlineStyles}
-              placeholder = "Write something colorful..."
+              placeholder = "Write something..."
               onChange = {this.onChange.bind(this)}
               editorState = {this.state.editorState}
             />
