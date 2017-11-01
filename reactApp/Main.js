@@ -72,9 +72,10 @@ class Main extends React.Component {
     console.log('increase font size', this.state.inlineStyles);
     var newFontSize = this.state.currentFontSize + (shrink ? -4 : 4);
     var newInlineStyles = Object.assign({}, this.state.inlineStyles, {[newFontSize]: {fontSize: `${newFontSize}px`}});
+    var i = RichUtils.toggleInlineStyle(this.state.editorState, String(this.state.currentFontSize));
     this.setState({
       inlineStyles: newInlineStyles,
-      editorState: RichUtils.toggleInlineStyle(this.state.editorState, String(newFontSize)),
+      editorState: RichUtils.toggleInlineStyle(i, String(newFontSize)),
       currentFontSize: newFontSize
     });
   }
@@ -124,11 +125,10 @@ class Main extends React.Component {
   }
 
   render(){
-    console.log(window.innerWidth);
     return (
-    <div style={{ width: window.innerWidth}}>
+    <div >
       {/* <AppBar title = "RE_EDIT" /> */}
-      <div className = "toolbar" style={{display: 'flex', justifyContent: 'spaceAround', width: '100%'}}>
+      <div className = "toolbar" style={{backgroundColor: '#ff4081'}}>
         {this.formatButton({icon: 'format_bold', style: 'BOLD'})}
         {this.formatButton({icon: 'format_italic', style: 'ITALIC'})}
         {this.formatButton({icon: 'format_underlined', style: 'UNDERLINE'})}
@@ -141,13 +141,15 @@ class Main extends React.Component {
         {this.increaseFontSize(false)}
         {this.increaseFontSize(true)}
       </div>
-      <Editor
-              ref = 'editor'
-              blockRenderMap={myBlockTypes}
-              customStyleMap = {this.state.inlineStyles}
-              onChange = {this.onChange.bind(this)}
-              editorState = {this.state.editorState}
-            />
+      <div style={{borderTop: '2px solid grey', margin: '20px', padding: '10px'}}>
+        <Editor
+          ref = 'editor'
+          blockRenderMap={myBlockTypes}
+          customStyleMap = {this.state.inlineStyles}
+          onChange = {this.onChange.bind(this)}
+          editorState = {this.state.editorState}
+        />
+      </div>
     </div>
     );
   }

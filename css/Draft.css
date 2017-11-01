@@ -1,11 +1,11 @@
 .public-DraftStyleDefault-block{
-  box-sizing: border-box;
-  border: 1px solid #ddd;
+  /*box-sizing: border-box;
+  border: 1px solid #ddd;*/
   cursor: text;
-  padding: 16px;
-  border-radius: 2px;
+  /*padding: 16px;*/
+  /*border-radius: 2px;*/
   margin-bottom: 2em;
-  box-shadow: inset 0px 1px 8px -3px #ABABAB;
+  /*box-shadow: inset 0px 1px 8px -3px #ABABAB;*/
   background: #fefefe;
 }
 
@@ -25,7 +25,7 @@
 }
 
 .editor {
-  border-top: 1px solid #ddd;
+  /*border-top: 1px solid #ddd;*/
   cursor: 'text';
   font-size: 16;
   margin-top: 20;
