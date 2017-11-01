@@ -45,7 +45,6 @@ class NewDoc extends React.Component{
     // event.preventDefault();
     axios.post('http://localhost:3000/newdoc',{
       newdocname: this.state.newdocname,
-      newdocpw: this.state.newdocpw
     })
     .then((response)=>{
       console.log(response);

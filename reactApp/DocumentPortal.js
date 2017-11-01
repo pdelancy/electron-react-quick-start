@@ -8,6 +8,7 @@ import SharedDoc from './SharedDoc';
 var newDocs = ['doc1', 'doc2', 'doc3'];
 
 class MyDocuments extends React.Component {
+
   render(){
     return(
       <div className = 'container'>
@@ -24,11 +25,15 @@ class MyDocuments extends React.Component {
 
 
 class DocumentPortal extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
   render() {
     return (
       <div>
       <h3>Document Portal</h3>
-      <NewDoc />
+      <NewDoc history={this.props.history}/>
       <MyDocuments />
       <SharedDoc style = {{alignItems: 'center'}}/>
       </div>

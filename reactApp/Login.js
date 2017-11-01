@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Redirect from 'react-router';
 import {BrowserRouter, Switch, Route, Link} from 'react-router-DOM';
@@ -20,6 +19,7 @@ class Login extends React.Component {
     })
     .then((response)=>{
       console.log(response);
+      console.log(this.props.history);
       this.props.history.push('/document');
     })
     .catch((err)=>{

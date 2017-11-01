@@ -1,6 +1,6 @@
 import React from 'react';
 import Redirect from 'react-router';
-import { Switch, Route, Link} from 'react-router-DOM';
+import { Switch, Route, Link } from 'react-router-DOM';
 import AppBar from 'material-ui/AppBar';
 import Main from './Main';
 import Login from './Login';
