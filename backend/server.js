@@ -2,14 +2,16 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const path = require('path');
-
 var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
-var MongoStore = require('connect-mongo')(session);
+const MongoStore = require('connect-mongo')(session);
 
 
+//Bodyparser parses fields sent in json format, axios send fields in json
+app.use(bodyParser.json());
 
+//use passport to turn the user in to an id at the beginning and turn the id into an user at the end
 passport.serializeUser(function(user, done) {
   done(null, user._id);
 });
@@ -49,49 +51,44 @@ app.use(express.static(path.join(__dirname, 'build')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-// app.get('/login', (req, res) => {
-//   res.sendFile(path.join(__dirname, "..", 'build', "login.html"));
-// });
-app.get('/', (req, res) => {
-  res.send('successfully connected to server');
-});
+app.get('/login', (req, res) => {
+  // res.sendFile(path.join(__dirname, "..", 'build', "login.html"));
+  res.send('get login');});
 
 app.post('/login', passport.authenticate('local'), (req, res) => {
-  res.send('successfully logged in');
+  res.redirect('/');
 });
 
-// app.get('/register', (req, res) => {
-//   res.send('');
-// });
+app.get('/register', (req, res) => {
+  // res.sendFile(path.join(__dirname, "..", 'build', "register.html"));
+  res.send('get register');
+});
 
 app.post('/register', (req, res) => {
+  console.log('register body', req.body);
   const newUser = new User(req.body);
   newUser.save((err, result) => {
     if (err) {
-      res.send('there was some kind of error');
+      res.json({success: false, error: err});
     } else {
-      res.send('succesfully registered');
+      res.json({success: true});
     }
   });
 });
+
 
 app.use((req, res, next) => {
   if (req.user) {
     next();
   } else {
-    res.send('not logged in');
+    res.redirect('/login');
   }
 });
 
-
-
-app.get('/users', (req, res) => {
-  User.find()
-  .then((users)=>{
-    res.send(users);
-  });
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, "..", 'build', 'index.dev.html'));
 });
 
 app.listen(3000, function () {
-  console.log('Backend server for Electron App running on port 3000!');
-});
+  console.log('Backend server for Electron App running on port 3000!')
+})
