@@ -6,9 +6,8 @@ import {CirclePicker} from 'react-color';
 import Popover from 'material-ui/Popover';
 import {Editor, EditorState, RichUtils, DefaultDraftBlockRenderMap} from 'draft-js';
 import {Map} from 'immutable';
-
-import {Route, Link} from 'react-router-DOM';
 import io from 'socket.io-client';
+import axios from 'axios';
 
 const myBlockTypes = DefaultDraftBlockRenderMap.merge(new Map({
   right: {
