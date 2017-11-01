@@ -143,7 +143,7 @@ class Main extends React.Component {
   render(){
     console.log(window.innerWidth);
     return (
-    <div style={{ width: window.innerWidth}}>
+    <div>
       {/* <AppBar title = "RE_EDIT" /> */}
       <div className = "toolbar">
         {this.formatButton({icon: 'format_bold', style: 'BOLD'})}
