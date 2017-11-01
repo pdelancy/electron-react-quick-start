@@ -43,7 +43,7 @@ class Main extends React.Component {
       });
     }else{
       this.setState({
-        editorState: RichUtils.toggleInlineStyle(this.state.editorState, style, block)
+        editorState: RichUtils.toggleInlineStyle(this.state.editorState, style)
       });
     }
   }
@@ -124,9 +124,11 @@ class Main extends React.Component {
   }
 
   render(){
+    console.log(window.innerWidth);
     return (
     <div>
-      <AppBar title = "RE_EDIT" />
+      {/* <AppBar title = "RE_EDIT" /> */}
+      <button>Back to Documents Portal</button>
       <div className = "toolbar">
         {this.formatButton({icon: 'format_bold', style: 'BOLD'})}
         {this.formatButton({icon: 'format_italic', style: 'ITALIC'})}
@@ -139,6 +141,7 @@ class Main extends React.Component {
         {this.formatButton({icon: 'format_align_right', style: 'right', block: true})}
         {this.increaseFontSize(false)}
         {this.increaseFontSize(true)}
+        <button>Save changes</button>
       </div>
       <Editor
               ref = 'editor'
