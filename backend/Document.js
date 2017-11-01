@@ -7,7 +7,7 @@ const Document = mongoose.model('Document', {
     unique: true
   },
   body: {
-    type: Object
+    type: String
   }
 });
 

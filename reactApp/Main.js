@@ -145,10 +145,6 @@ class Main extends React.Component {
     return (
     <div>
       {/* <AppBar title = "RE_EDIT" /> */}
-<<<<<<< HEAD
-      <button>Back to Documents Portal</button>
-=======
->>>>>>> master
       <div className = "toolbar">
         {this.formatButton({icon: 'format_bold', style: 'BOLD'})}
         {this.formatButton({icon: 'format_italic', style: 'ITALIC'})}
@@ -161,11 +157,7 @@ class Main extends React.Component {
         {this.formatButton({icon: 'format_align_right', style: 'right', block: true})}
         {this.increaseFontSize(false)}
         {this.increaseFontSize(true)}
-<<<<<<< HEAD
-        <button>Save changes</button>
-=======
         {this.saveChanges()}
->>>>>>> master
       </div>
       <Editor
               ref = 'editor'
