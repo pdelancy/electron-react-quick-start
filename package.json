@@ -34,10 +34,7 @@
   },
   "dependencies": {
     "axios": "^0.17.0",
-<<<<<<< HEAD
     "body-parser": "^1.18.2",
-=======
->>>>>>> 4a726c304efd67ee4bb3594ee8c1ea1033556cbd
     "connect-mongo": "^2.0.0",
     "css-loader": "^0.28.7",
     "draft-js": "^0.10.4",
@@ -51,6 +48,7 @@
     "react": "^15.6.2",
     "react-color": "^2.13.8",
     "react-dom": "^15.6.2",
+    "react-modal": "^3.1.0",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
     "style-loader": "^0.19.0"

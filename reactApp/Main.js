@@ -1,12 +1,16 @@
 import React from 'react';
 import AppBar from 'material-ui/AppBar';
 import FontIcon from 'material-ui/FontIcon';
+import Login from './Login';
+import Register from './Register';
 import RaisedButton from 'material-ui/RaisedButton';
 import * as colors from 'material-ui/styles/colors';
-import { CirclePicker } from 'react-color';
+import {CirclePicker} from 'react-color';
 import Popover, {PopoverAnimationVertical} from 'material-ui/Popover';
 import {Editor, EditorState, Modifier, RichUtils, DefaultDraftBlockRenderMap} from 'draft-js';
 import {Map} from 'immutable';
+
+import {Route, Link} from 'react-router-dom';
 
 const myBlockTypes = DefaultDraftBlockRenderMap.merge(new Map({
   right: {
@@ -36,7 +40,7 @@ class Main extends React.Component {
 
   toggleFormat(e, style, block){
     // this.refs.editor.focus();
-    event.preventDefault(e);
+    e.preventDefault();
     if(block){
       this.setState({
         editorState: RichUtils.toggleBlockType(this.state.editorState, style, block)
@@ -51,8 +55,11 @@ class Main extends React.Component {
   formatButton({icon, style, block}) {
     return(
       <RaisedButton
-        secondary={true}
-        backgroundColor = {this.state.editorState.getCurrentInlineStyle().has(style) ? colors.orange800 : colors.orange200}
+        backgroundColor = {
+          this.state.editorState.getCurrentInlineStyle().has(style) ?
+          String(colors.gray200) :
+          String(colors.gray800)
+        }
         onMouseDown = {(e) => this.toggleFormat(e, style, block)}
         icon={<FontIcon className="material-icons"> {icon} </FontIcon>}
   />
@@ -82,7 +89,7 @@ class Main extends React.Component {
   increaseFontSize(shrink){
     return(
       <RaisedButton
-        backgroundColor = {colors.orange800}
+        backgroundColor = {String(colors.gray200)}
         onMouseDown = {()=> this.applyIncreaseFontSize(shrink)}
         icon={<FontIcon className="material-icons"> {shrink ? 'zoom_out' : 'zoom_in'} </FontIcon>}
       />
@@ -106,7 +113,7 @@ class Main extends React.Component {
     return(
       <div style = {{display: 'inline-block'}}>
       <RaisedButton
-        backgroundColor = {colors.orange800}
+        backgroundColor = {String(colors.gray200)}
         icon={<FontIcon className="material-icons"> format_paint</FontIcon>}
         onClick = {this.openColorPicker.bind(this)}
       />
@@ -123,12 +130,22 @@ class Main extends React.Component {
     );
   }
 
+  saveChanges(){
+    return(
+      <RaisedButton
+        backgroundColor = {String(colors.gray200)}
+        // onMouseDown ={()=>()}
+        icon={<FontIcon className="material-icons"> save </FontIcon>}
+      />
+    );
+  }
+
   render(){
     console.log(window.innerWidth);
     return (
     <div style={{ width: window.innerWidth}}>
       {/* <AppBar title = "RE_EDIT" /> */}
-      <div className = "toolbar" style={{display: 'flex', justifyContent: 'spaceAround', width: '100%'}}>
+      <div className = "toolbar">
         {this.formatButton({icon: 'format_bold', style: 'BOLD'})}
         {this.formatButton({icon: 'format_italic', style: 'ITALIC'})}
         {this.formatButton({icon: 'format_underlined', style: 'UNDERLINE'})}
@@ -140,11 +157,13 @@ class Main extends React.Component {
         {this.formatButton({icon: 'format_align_right', style: 'right', block: true})}
         {this.increaseFontSize(false)}
         {this.increaseFontSize(true)}
+        {this.saveChanges()}
       </div>
       <Editor
               ref = 'editor'
               blockRenderMap={myBlockTypes}
               customStyleMap = {this.state.inlineStyles}
+              placeholder = "Write something colorful..."
               onChange = {this.onChange.bind(this)}
               editorState = {this.state.editorState}
             />

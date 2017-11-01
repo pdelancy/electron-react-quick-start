@@ -20,7 +20,7 @@ class Login extends React.Component {
     })
     .then((response)=>{
       console.log(response);
-      this.props.history.push('/editor');
+      this.props.history.push('/document');
     })
     .catch((err)=>{
       console.log('Error: ', err);
