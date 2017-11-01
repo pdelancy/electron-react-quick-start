@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 // import injectTapEventPlugin from 'react-tap-event-plugin';
 import Main from './Main';
-// import MyEditor from './Main';
+// import Login from './Login';
+// import Register from './Register';
+import DocumentPortal from './DocumentPortal';
 import {Editor, EditorState, Modifier, RichUtils} from 'draft-js';
-
+import {HashRouter} from 'react-router-dom';
 
 require('../css/Draft.css');
 
@@ -16,7 +18,9 @@ fetch('http://localhost:3000')
 .catch(err => {throw err;});
 
 ReactDOM.render(
+  <HashRouter>
   <MuiThemeProvider>
   <Main />
-</MuiThemeProvider>,
+  </MuiThemeProvider>
+</HashRouter>,
    document.getElementById('root'));

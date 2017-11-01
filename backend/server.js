@@ -2,13 +2,25 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const path = require('path');
-
 var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 
-app.use(session({ secret: 'secret sauce' }));
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGODB_URI);
+const MongoStore = require('connect-mongo')(session);
 
+//store session in the database, if dont have mongostore, everytime re-render session data would be lose
+app.use(session({ secret: 'secret sauce',
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection
+  })
+}));
+
+//Bodyparser parses fields sent in json format, axios send fields in json
+app.use(bodyParser.json());
+
+//use passport to turn the user in to an id at the beginning and turn the id into an user at the end
 passport.serializeUser(function(user, done) {
   done(null, user._id);
 });
@@ -33,8 +45,7 @@ app.use(passport.session());
 
 const User = require('./User');
 
-const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI);
+
 
 app.use(express.static(path.join(__dirname, 'build')));
 
@@ -42,24 +53,27 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, "..", 'build', "login.html"));
-})
+  // res.sendFile(path.join(__dirname, "..", 'build', "login.html"));
+  res.send('get login');
+});
 
 app.post('/login', passport.authenticate('local'), (req, res) => {
   res.redirect('/');
 });
 
 app.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, "..", 'build', "register.html"));
+  // res.sendFile(path.join(__dirname, "..", 'build', "register.html"));
+  res.send('get register');
 });
 
 app.post('/register', (req, res) => {
+  console.log('register body', req.body);
   const newUser = new User(req.body);
   newUser.save((err, result) => {
     if (err) {
-      res.send('there was some kind of error')
+      res.json({success: false, error: err});
     } else {
-      res.redirect('/login')
+      res.json({success: true});
     }
   });
 });
