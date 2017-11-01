@@ -1,16 +1,14 @@
 import React from 'react';
 import Modal from 'react-modal';
 import RaisedButton from 'material-ui/RaisedButton';
-import * as colors from 'material-ui/styles/colors';
-import {Editor, EditorState, Modifier, RichUtils, DefaultDraftBlockRenderMap} from 'draft-js';
 import Redirect from 'react-router';
 import {BrowserRouter, Switch, Route, Link} from 'react-router-DOM';
+import * as colors from 'material-ui/styles/colors';
 import axios from 'axios';
 
 class NewDoc extends React.Component{
   constructor(props) {
     super(props);
-    console.log('MIAN' ,props);
     this.state = {
       newdocname: '',
       newdocpw: '',
@@ -45,18 +43,16 @@ class NewDoc extends React.Component{
   createNewDoc() {
     // alert('A new document is added' + this.state.value);
     // event.preventDefault();
-    console.log('this.props111',this.props);
     axios.post('http://localhost:3000/newdoc',{
-      title: this.state.newdocname
+      title: this.state.newdocname,
     })
     .then((response)=>{
       console.log(response);
-      console.log('this.props2222',this.props);
-      this.props.history.push('/editor');
+      console.log("url", '/editor/' + response.data_id );
+      this.props.history.push('/editor/id=' + response.data._id);
     })
     .catch((err)=>{
       console.log('Error: ', err);
-
       return null;
     });
   }
@@ -93,7 +89,7 @@ class NewDoc extends React.Component{
                 placeholder="Enter new document password"
                 onChange={(e)=>(this.setState({newdocpw: e.target.value}))}
                 value={this.state.newdocpw} /><br/>
-          <button onClick = {()=>this.createNewDoc()}>Submit</button><br/>
+          <button onClick = {()=>this.createNewDoc()} >Submit </button><br/>
           <button onClick={this.closeModal}>close</button>
         </Modal>
     </form>

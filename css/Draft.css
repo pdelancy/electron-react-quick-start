@@ -1,6 +1,6 @@
 .public-DraftStyleDefault-block{
-  box-sizing: border-box;
-  /*border: 1px solid #ddd;*/
+  /*box-sizing: border-box;*/
+  margin-top: 5px;
   cursor: text;
   padding: 16px;
   /*border-radius: 2px;*/
@@ -8,13 +8,8 @@
   background: #fefefe;
 }
 
-.modal{
-  text-align: center;
-  border: 2px solid black;
-}
-
 .toolbar{
-  border-bottom: 2px solid gray;
+  /*border-bottom: 2px solid gray;*/
   padding: 10px;
 }
 
