@@ -82,10 +82,10 @@ app.post('/newdoc', (req, res) => {
     if (err) {
       res.send('there was some kind of error');
     } else {
-      res.send('successfully created document');
+      res.send(result);
     }
-  })
-})
+  });
+});
 
 app.post('/updatedoc', (req, res) => {
   Document.findById(req.body.id, (err, doc) => {

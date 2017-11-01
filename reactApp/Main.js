@@ -1,17 +1,12 @@
 import React from 'react';
-import AppBar from 'material-ui/AppBar';
 import FontIcon from 'material-ui/FontIcon';
-import Login from './Login';
-import Register from './Register';
 import RaisedButton from 'material-ui/RaisedButton';
 import * as colors from 'material-ui/styles/colors';
 import {CirclePicker} from 'react-color';
-import Popover, {PopoverAnimationVertical} from 'material-ui/Popover';
-import {Editor, EditorState, Modifier, RichUtils, DefaultDraftBlockRenderMap} from 'draft-js';
+import Popover from 'material-ui/Popover';
+import {Editor, EditorState, RichUtils, DefaultDraftBlockRenderMap} from 'draft-js';
 import {Map} from 'immutable';
 import axios from 'axios';
-
-import {Route, Link} from 'react-router-dom';
 
 const myBlockTypes = DefaultDraftBlockRenderMap.merge(new Map({
   right: {
@@ -131,21 +126,41 @@ class Main extends React.Component {
     );
   }
 
+  updateDoc(id, editorState){
+    axios.post('http://localhost:3000/updatedoc', {
+      id,
+      editorState
+    })
+    .then(resp=>{
+      alert('Document Saved!');
+    })
+    .catch(err=>console.log(err));
+  }
+
   saveChanges(){
     return(
       <RaisedButton
         backgroundColor = {String(colors.gray200)}
-        // onMouseDown ={() => this.onSave()}
+        onMouseDown ={()=>(this.updateDoc(this.props.match.params.id, this.state.editorState))}
         icon={<FontIcon className="material-icons"> save </FontIcon>}
       />
     );
+  }
+
+  returnhome(){
+    var returnHomePage = confirm("Are you sure you want to return to main page?");
+    if (returnHomePage){
+      this.props.history.push('/document');
+    }else{
+      return;
+    }
   }
 
   render(){
     console.log(window.innerWidth);
     return (
     <div>
-      {/* <AppBar title = "RE_EDIT" /> */}
+      Document ID: {this.props.match.params.id}
       <div className = "toolbar">
         {this.formatButton({icon: 'format_bold', style: 'BOLD'})}
         {this.formatButton({icon: 'format_italic', style: 'ITALIC'})}
@@ -158,7 +173,13 @@ class Main extends React.Component {
         {this.formatButton({icon: 'format_align_right', style: 'right', block: true})}
         {this.increaseFontSize(false)}
         {this.increaseFontSize(true)}
+      </div>
+      <div className = "toolbar">
         {this.saveChanges()}
+        <RaisedButton
+          backgroundColor = {String(colors.gray800)}
+          onMouseDown = {()=>this.returnhome()}
+          icon={<FontIcon className="material-icons"> home </FontIcon>}/>
       </div>
       <Editor
               ref = 'editor'
