@@ -1,7 +1,7 @@
 import React from 'react';
 // import Redirect from 'react-router';
 import axios from 'axios';
-import {Redirect, Route, Link} from 'react-router-DOM';
+import {Redirect, Link} from 'react-router-DOM';
 
 class Register extends React.Component {
   constructor(props){

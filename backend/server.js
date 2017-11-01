@@ -86,8 +86,8 @@ app.post('/newdoc', (req, res) => {
     } else {
       res.send('successfully created document');
     }
-  })
-})
+  });
+});
 
 
 app.use((req, res, next) => {
@@ -102,9 +102,12 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, "..", 'build', 'index.dev.html'));
 });
 
-io.on('connection', function(socket){
-  io.on('joinRoom', (socket)=>{
-    socket.join('some room');
+io.on('connection', function(socket) {
+  io.on('joinRoom', (roomName)=>{
+    socket.join(roomName);
+  });
+  io.on('update', (roomName, editorState) => {
+    io.to(roomName).emit('update', editorState);
   });
 });
 
