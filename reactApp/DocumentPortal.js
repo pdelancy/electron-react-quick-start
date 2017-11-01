@@ -1,5 +1,4 @@
 import React from 'react';
-import RaisedButton from 'material-ui/RaisedButton';
 import * as colors from 'material-ui/styles/colors';
 import NewDoc from './NewDoc';
 import SharedDoc from './SharedDoc';
@@ -22,7 +21,6 @@ class MyDocuments extends React.Component {
     );
   }
 }
-
 
 class DocumentPortal extends React.Component {
   constructor(props) {

@@ -129,7 +129,7 @@ class Main extends React.Component {
   updateDoc(id, editorState){
     axios.post('http://localhost:3000/updatedoc', {
       id,
-      editorState
+      body: JSON.Stringify(editorState)
     })
     .then(resp=>{
       alert('Document Saved!');
