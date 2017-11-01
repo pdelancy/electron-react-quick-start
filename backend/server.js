@@ -6,16 +6,7 @@ var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 
-const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI);
-const MongoStore = require('connect-mongo')(session);
 
-//store session in the database, if dont have mongostore, everytime re-render session data would be lose
-app.use(session({ secret: 'secret sauce',
-  store: new MongoStore({
-    mongooseConnection: mongoose.connection
-  })
-}));
 
 //Bodyparser parses fields sent in json format, axios send fields in json
 app.use(bodyParser.json());
@@ -46,6 +37,13 @@ app.use(passport.session());
 const User = require('./User');
 
 
+
+app.use(session({
+  secret: 'secret sauce',
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection
+  })
+}));
 
 app.use(express.static(path.join(__dirname, 'build')));
 
