@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Redirect from 'react-router';
 import {BrowserRouter, Switch, Route, Link} from 'react-router-DOM';

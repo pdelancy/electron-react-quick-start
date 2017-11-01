@@ -42,6 +42,7 @@
     "express-session": "^1.15.6",
     "immutable": "^3.8.2",
     "material-ui": "^0.19.4",
+    "mongoose": "^4.12.6",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "react": "^15.6.2",
