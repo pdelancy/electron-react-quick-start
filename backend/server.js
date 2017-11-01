@@ -54,8 +54,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/login', (req, res) => {
   // res.sendFile(path.join(__dirname, "..", 'build', "login.html"));
-  res.send('get login');
-});
+  res.send('get login');});
 
 app.post('/login', passport.authenticate('local'), (req, res) => {
   res.redirect('/');

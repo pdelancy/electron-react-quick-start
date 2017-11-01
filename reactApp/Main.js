@@ -47,7 +47,7 @@ class Main extends React.Component {
       });
     }else{
       this.setState({
-        editorState: RichUtils.toggleInlineStyle(this.state.editorState, style, block)
+        editorState: RichUtils.toggleInlineStyle(this.state.editorState, style)
       });
     }
   }
@@ -141,13 +141,11 @@ class Main extends React.Component {
   }
 
   render(){
+    console.log(window.innerWidth);
     return (
-    <div>
-      <AppBar title = "RE_EDIT"/>
-      <Route path = '/' exact render = {()=><Link to='/register'> Go to Register </Link>}/>
-      <Route path = '/register' exact component = {Register} />
-      <Route path = '/login' exact component = {Login} />
-      <div className = "toolbar">
+    <div style={{ width: window.innerWidth}}>
+      {/* <AppBar title = "RE_EDIT" /> */}
+      <div className = "toolbar" style={{display: 'flex', justifyContent: 'spaceAround', width: '100%'}}>
         {this.formatButton({icon: 'format_bold', style: 'BOLD'})}
         {this.formatButton({icon: 'format_italic', style: 'ITALIC'})}
         {this.formatButton({icon: 'format_underlined', style: 'UNDERLINE'})}
