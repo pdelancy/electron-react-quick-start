@@ -2,7 +2,6 @@
 import React from 'react';
 import Redirect from 'react-router';
 import {BrowserRouter, Switch, Route, Link} from 'react-router-DOM';
-import Main from './Main';
 import axios from 'axios';
 class Login extends React.Component {
   constructor(props){

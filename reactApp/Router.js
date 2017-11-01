@@ -16,6 +16,7 @@ class Router extends React.Component {
         <Route path={"/"} exact component = {Login} />
         <Route path={"/register"} exact component = {Register} />
         <Route path={"/editor"} exact component = {Main} />
+        
       </div>
     );
   }

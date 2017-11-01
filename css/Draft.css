@@ -9,11 +9,19 @@
   background: #fefefe;
 }
 
-.root {
-  font-family: '\'Georgia\', serif';
-  font-size: 14;
-  padding: 20;
-  width: 600;
+.modal{
+  text-align: center;
+  border: 2px solid black;
+}
+
+.toolbar{
+  border-bottom: 2px solid gray;
+  padding: 10px;
+}
+
+.toolbar > * {
+  margin-right: 5px;
+  margin-top: 5px;
 }
 
 .right-align{
@@ -24,25 +32,8 @@
   text-align: center;
 }
 
-.editor {
-  /*border-top: 1px solid #ddd;*/
-  cursor: 'text';
-  font-size: 16;
-  margin-top: 20;
-  min-height: 400;
-  padding-top: 20;
-}
-
-.controls {
-  font-family: '\'Helvetica\', sans-serif';
-  font-size: 14;
-  margin-bottom: 10;
-  user-select: none;
-}
-
-.styleButton {
-  color: #999;
-  cursor: 'pointer';
-  margin-right: 16;
-  padding: 3px;
+.container{
+  border: 1px solid black;
+  padding: 10px;
+  margin: 10px;
 }
