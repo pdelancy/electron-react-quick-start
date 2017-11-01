@@ -5,8 +5,6 @@ import AppBar from 'material-ui/AppBar';
 import Main from './Main';
 import Login from './Login';
 import Register from './Register';
-import DocumentPortal from './DocumentPortal';
-
 class Router extends React.Component {
   constructor(props){
     super(props);
@@ -18,7 +16,7 @@ class Router extends React.Component {
         <Route path={"/"} exact component = {Login} />
         <Route path={"/register"} exact component = {Register} />
         <Route path={"/editor"} exact component = {Main} />
-        <Route path = {"/document"} exact component = {DocumentPortal} />
+
       </div>
     );
   }
