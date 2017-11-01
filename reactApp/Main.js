@@ -185,7 +185,7 @@ class Main extends React.Component {
               ref = 'editor'
               blockRenderMap={myBlockTypes}
               customStyleMap = {this.state.inlineStyles}
-              placeholder = "Write something colorful..."
+              placeholder = "Write something..."
               onChange = {this.onChange.bind(this)}
               editorState = {this.state.editorState}
             />
