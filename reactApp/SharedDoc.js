@@ -45,7 +45,7 @@ class SharedDoc extends React.Component{
     })
     .then((response)=>{
       console.log(response);
-      this.props.history.push('/document');
+      this.props.history.pop();
     })
     .catch((err)=>{
       console.log('Error: ', err);

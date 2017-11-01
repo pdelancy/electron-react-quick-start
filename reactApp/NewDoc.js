@@ -44,11 +44,12 @@ class NewDoc extends React.Component{
     // alert('A new document is added' + this.state.value);
     // event.preventDefault();
     axios.post('http://localhost:3000/newdoc',{
-      newdocname: this.state.newdocname,
+      title: this.state.newdocname,
     })
     .then((response)=>{
       console.log(response);
-      this.props.history.push('/editor');
+      console.log("url", '/editor/' + response.data_id );
+      this.props.history.push('/editor/id=' + response.data._id);
     })
     .catch((err)=>{
       console.log('Error: ', err);
