@@ -145,7 +145,7 @@ class Main extends React.Component {
     return (
     <div style={{ width: window.innerWidth}}>
       {/* <AppBar title = "RE_EDIT" /> */}
-      <div className = "toolbar" style={{display: 'flex', justifyContent: 'spaceAround', width: '100%'}}>
+      <div className = "toolbar">
         {this.formatButton({icon: 'format_bold', style: 'BOLD'})}
         {this.formatButton({icon: 'format_italic', style: 'ITALIC'})}
         {this.formatButton({icon: 'format_underlined', style: 'UNDERLINE'})}

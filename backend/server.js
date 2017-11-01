@@ -5,7 +5,7 @@ const path = require('path');
 var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
-
+const MongoStore = require('connect-mongo')(session);
 
 
 //Bodyparser parses fields sent in json format, axios send fields in json
@@ -36,7 +36,8 @@ app.use(passport.session());
 
 const User = require('./User');
 
-
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGODB_URI);
 
 app.use(session({
   secret: 'secret sauce',
@@ -74,6 +75,7 @@ app.post('/register', (req, res) => {
     }
   });
 });
+
 
 app.use((req, res, next) => {
   if (req.user) {
