@@ -2,12 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 // import injectTapEventPlugin from 'react-tap-event-plugin';
-import Main from './Main';
+// import Main from './Main';
+import Router from './Router';
 // import MyEditor from './Main';
-import {Editor, EditorState, Modifier, RichUtils} from 'draft-js';
-import { formatAlignLeft, formatAlignRight } from 'material-ui-icons';
-import FontIcon from 'material-ui/FontIcon';
-
+import {HashRouter, Route} from 'react-router-DOM';
 
 require('../css/Draft.css');
 
@@ -22,7 +20,9 @@ fetch('http://localhost:3000')
 .catch(err => {throw err;});
 
 ReactDOM.render(
-  <MuiThemeProvider>
-  <Main />
-</MuiThemeProvider>,
+  <HashRouter basename='/'>
+    <MuiThemeProvider>
+      <Route path={"/"} component={Router}/>
+    </MuiThemeProvider>
+  </HashRouter>,
    document.getElementById('root'));
