@@ -24,11 +24,15 @@ class MyDocuments extends React.Component {
 
 
 class DocumentPortal extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  
   render() {
     return (
       <div>
       <h3>Document Portal</h3>
-      <NewDoc />
+      <NewDoc history={this.props.history}/>
       <MyDocuments />
       <SharedDoc style = {{alignItems: 'center'}}/>
       </div>

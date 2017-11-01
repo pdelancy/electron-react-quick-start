@@ -7,7 +7,6 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local');
 const MongoStore = require('connect-mongo')(session);
 
-
 //Bodyparser parses fields sent in json format, axios send fields in json
 app.use(bodyParser.json());
 
@@ -35,6 +34,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const User = require('./User');
+const Document = require('./Document');
 
 const mongoose = require('mongoose');
 mongoose.connect(process.env.MONGODB_URI);
@@ -75,6 +75,17 @@ app.post('/register', (req, res) => {
     }
   });
 });
+
+app.post('/newdoc', (req, res) => {
+  const newDoc = new Document(req.body);
+  newDoc.save((err, result) => {
+    if (err) {
+      res.send('there was some kind of error');
+    } else {
+      res.send('successfully created document');
+    }
+  })
+})
 
 
 app.use((req, res, next) => {
