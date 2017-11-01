@@ -11,6 +11,7 @@ import {Editor, EditorState, Modifier, RichUtils, DefaultDraftBlockRenderMap} fr
 import {Map} from 'immutable';
 
 import {Route, Link} from 'react-router-DOM';
+import io from 'socket.io-client';
 
 const myBlockTypes = DefaultDraftBlockRenderMap.merge(new Map({
   right: {
@@ -30,6 +31,19 @@ class Main extends React.Component {
       currentFontSize: 12,
       inlineStyles: {}
     };
+    this.socket = io('http://localhost:3000');
+
+    this.socket.on('connect', function() {
+      console.log('Connected');
+    });
+
+    this.socket.emit('joinRoom', this.props.match.params.id);
+
+    this.socket.on('update', (editorState)=>{
+      this.setState({
+        editorState: editorState
+      });
+    });
   }
 
   onChange(editorState){

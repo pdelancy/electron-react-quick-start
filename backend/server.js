@@ -6,6 +6,8 @@ var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 const MongoStore = require('connect-mongo')(session);
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 
 //Bodyparser parses fields sent in json format, axios send fields in json
 app.use(bodyParser.json());
@@ -84,8 +86,8 @@ app.post('/newdoc', (req, res) => {
     } else {
       res.send('successfully created document');
     }
-  })
-})
+  });
+});
 
 
 app.use((req, res, next) => {
@@ -100,6 +102,15 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, "..", 'build', 'index.dev.html'));
 });
 
+io.on('connection', function(socket) {
+  io.on('joinRoom', (roomName)=>{
+    socket.join(roomName);
+  });
+  io.on('update', (roomName, editorState) => {
+    io.to(roomName).emit('update', editorState);
+  });
+});
+
 app.listen(3000, function () {
-  console.log('Backend server for Electron App running on port 3000!')
-})
+  console.log('Backend server for Electron App running on port 3000!');
+});
