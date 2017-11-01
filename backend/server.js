@@ -8,12 +8,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local');
 var MongoStore = require('connect-mongo')(session);
 
-app.use(session({
-  secret: 'secret sauce',
-  store: new MongoStore({
-    mongooseConnection: mongoose.connection
-  })
-}));
+
 
 passport.serializeUser(function(user, done) {
   done(null, user._id);
@@ -41,6 +36,13 @@ const User = require('./User');
 
 const mongoose = require('mongoose');
 mongoose.connect(process.env.MONGODB_URI);
+
+app.use(session({
+  secret: 'secret sauce',
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection
+  })
+}));
 
 app.use(express.static(path.join(__dirname, 'build')));
 

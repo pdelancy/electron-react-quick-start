@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "axios": "^0.17.0",
+    "connect-mongo": "^2.0.0",
     "css-loader": "^0.28.7",
     "draft-js": "^0.10.4",
     "express": "^4.15.3",
