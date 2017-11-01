@@ -10,7 +10,7 @@ import Popover, {PopoverAnimationVertical} from 'material-ui/Popover';
 import {Editor, EditorState, Modifier, RichUtils, DefaultDraftBlockRenderMap} from 'draft-js';
 import {Map} from 'immutable';
 
-import {Route, Link} from 'react-router-dom';
+import {Route, Link} from 'react-router-DOM';
 
 const myBlockTypes = DefaultDraftBlockRenderMap.merge(new Map({
   right: {
@@ -157,6 +157,8 @@ class Main extends React.Component {
         {this.formatButton({icon: 'format_align_right', style: 'right', block: true})}
         {this.increaseFontSize(false)}
         {this.increaseFontSize(true)}
+      </div>
+      <div className = "toolbar" style={{display: 'flex', alignItems: 'right', flexDirection: 'column'}}>
         {this.saveChanges()}
       </div>
       <Editor

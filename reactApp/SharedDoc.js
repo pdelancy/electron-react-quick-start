@@ -2,7 +2,6 @@ import React from 'react';
 import Modal from 'react-modal';
 import RaisedButton from 'material-ui/RaisedButton';
 import * as colors from 'material-ui/styles/colors';
-import {Editor, EditorState, Modifier, RichUtils, DefaultDraftBlockRenderMap} from 'draft-js';
 import axios from 'axios';
 
 class SharedDoc extends React.Component{
