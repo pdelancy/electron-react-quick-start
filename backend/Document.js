@@ -16,7 +16,7 @@ const Document = mongoose.model('Document', {
   },
   contributor: [{
     type: Schema.ObjectId,
-    ref: 'User',
+    ref: 'User'
   }]
 });
 
