@@ -43,14 +43,16 @@ class NewDoc extends React.Component{
   createNewDoc() {
     // alert('A new document is added' + this.state.value);
     // event.preventDefault();
+    console.log(this.props.user);
     axios.post('http://localhost:3000/newdoc',{
       title: this.state.newdocname,
-      body: null
+      body: null,
+      user: this.props.user
     })
     .then((response)=>{
       console.log(response);
-      console.log("url", '/editor/' + response.data_id );
-      this.props.history.push('/editor/id=' + response.data._id);
+      console.log("url", '/editor/' + response.data._id );
+      this.props.history.push(`/editor/${this.props.user}/${response.data._id}`);
     })
     .catch((err)=>{
       console.log('Error: ', err);
