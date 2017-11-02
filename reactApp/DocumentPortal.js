@@ -12,6 +12,7 @@ class MyDocuments extends React.Component {
   }
 
   render(){
+    console.log('props', this.props);
     console.log('this.props.files', this.props.files);
     console.log(`/editor/${this.props.user}`);
     return(
