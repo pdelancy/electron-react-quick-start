@@ -53,7 +53,8 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/login', (req, res) => {
   // res.sendFile(path.join(__dirname, "..", 'build', "login.html"));
-  res.send('get login');});
+  res.send('get login');
+});
 
 app.post('/login', passport.authenticate('local'), (req, res) => {
   res.redirect('/');
@@ -95,8 +96,8 @@ app.post('/updatedoc', (req, res) => {
       doc.body = req.body.body;
       res.send('body updated');
     }
-  })
-})
+  });
+});
 
 app.use((req, res, next) => {
   if (req.user) {
@@ -111,5 +112,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(3000, function () {
-  console.log('Backend server for Electron App running on port 3000!')
-})
+  console.log('Backend server for Electron App running on port 3000!');
+});
