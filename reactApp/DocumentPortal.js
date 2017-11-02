@@ -54,7 +54,11 @@ class DocumentPortal extends React.Component {
 
   logout(){
     axios.get('http://localhost:3000/logout')
-      .catch(err=>console.log(err));
+    .then((resp) => {
+      console.log(resp);
+      this.props.history.replace('/');
+    })
+    .catch(err=>console.log(err));
   }
 
   render() {

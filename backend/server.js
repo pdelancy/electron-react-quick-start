@@ -61,6 +61,11 @@ app.post('/login', passport.authenticate('local'), (req, res) => {
   res.send(req.user);
 });
 
+app.get('/logout', function(req, res) {
+  req.logout();
+  res.send({success: true});
+});
+
 app.get('/register', (req, res) => {
   // res.sendFile(path.join(__dirname, "..", 'build', "register.html"));
   res.send('get register');
@@ -157,11 +162,6 @@ app.use((req, res, next) => {
   } else {
     res.redirect('/login');
   }
-});
-
-app.get('/logout', function(req, res) {
-  req.logout();
-  res.redirect('/login');
 });
 
 app.listen(3000, function () {
