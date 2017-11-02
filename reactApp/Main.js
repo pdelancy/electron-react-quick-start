@@ -7,6 +7,7 @@ import Popover from 'material-ui/Popover';
 import {Editor, EditorState, RichUtils, DefaultDraftBlockRenderMap, convertFromRaw, convertToRaw} from 'draft-js';
 import {Map} from 'immutable';
 import axios from 'axios';
+import io from 'socket.io-client';
 
 const myBlockTypes = DefaultDraftBlockRenderMap.merge(new Map({
   right: {
@@ -26,8 +27,25 @@ class Main extends React.Component {
       title: '',
       editorState: EditorState.createEmpty(),
       currentFontSize: 12,
-      inlineStyles: {}
+      inlineStyles: {},
+      socket: io('http://localhost:3000'),
     };
+
+    this.state.socket.on('connect', function() {
+      console.log(this);
+      self.state.socket.emit('join room', self.state.params.id);
+    });
+    this.state.socket.on('message', (msg) => {
+      console.log(msg);
+    });
+
+    this.state.socket.on('update', (contentState, selection)=>{
+      console.log('receieved update request');
+      const currentSelection = this.state.editorState.getSelection();
+      this.setState({
+        editorState: EditorState.forceSelection(EditorState.push(this.state.editorState, convertFromRaw(contentState)), selection)
+      });
+    });
   }
 
   componentDidMount(){
@@ -45,10 +63,18 @@ class Main extends React.Component {
     .catch(err=>console.log(err));
   }
 
+  componentWillUnmount(){
+    console.log('in componentWillUnmount');
+    this.state.socket.emit('leave room', this.state.params.id);
+  }
+
   onChange(editorState){
+    const selection = window.getSelection();
+    console.log(selection.anchorNode, selection.anchorOffset, selection.focusNode);
     this.setState({
       editorState
     });
+    this.state.socket.emit('update', convertToRaw(editorState.getCurrentContent()), editorState.getSelection());
   }
 
   toggleFormat(e, style, block){
