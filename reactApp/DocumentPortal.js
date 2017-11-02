@@ -39,12 +39,10 @@ class DocumentPortal extends React.Component {
   }
 
   componentDidMount(){
-    console.log(this.props);
     axios.post('http://localhost:3000/getAllDocs', {
       id: this.props.match.params.userid
     })
       .then((response) =>{
-        console.log('files', response);
         this.setState({
           files: response.data,
           user: this.props.match.params.userid
@@ -55,7 +53,6 @@ class DocumentPortal extends React.Component {
 
 
   logout(){
-    console.log('inside logout');
     axios.get('http://localhost:3000/logout')
       .catch(err=>console.log(err));
   }
