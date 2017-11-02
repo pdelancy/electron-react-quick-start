@@ -97,8 +97,8 @@ app.post('/updatedoc', (req, res) => {
       doc.body = req.body.body;
       res.send('body updated');
     }
-  })
-})
+  });
+});
 
 app.use((req, res, next) => {
   if (req.user) {
