@@ -1,21 +1,26 @@
 import React from 'react';
-import RaisedButton from 'material-ui/RaisedButton';
-import * as colors from 'material-ui/styles/colors';
 import NewDoc from './NewDoc';
 import SharedDoc from './SharedDoc';
-
-
-var newDocs = ['doc1', 'doc2', 'doc3'];
+import axios from 'axios';
+import { Link } from 'react-router-DOM';
+import * as colors from 'material-ui/styles/colors';
+import RaisedButton from 'material-ui/RaisedButton';
 
 class MyDocuments extends React.Component {
+  constructor(props) {
+    super(props);
+  }
 
   render(){
+    console.log('this.props.files', this.props.files);
+    console.log(`/editor/${this.props.user}`);
     return(
       <div className = 'container'>
         <h3> My Documents </h3>
         <ul>
-        {newDocs.map((doc)=>{return(
-          <li>{doc}</li>);
+        {this.props.files.map((doc)=>{return(
+          <li key = {doc._id}><Link to = {`/editor/${this.props.user}/${doc._id}`}>
+          {doc.title}</Link></li>);
         })}
       </ul>
       </div>
@@ -23,19 +28,54 @@ class MyDocuments extends React.Component {
   }
 }
 
-
 class DocumentPortal extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      files: [],
+      user: ''
+    };
+  }
+
+  componentDidMount(){
+    console.log(this.props.match.params);
+    axios.post('http://localhost:3000/getAllDocs', {
+      id: this.props.match.params.userid
+    })
+      .then(response=>{
+        console.log('files', response.data);
+        this.setState({
+          files: response.data,
+          user: this.props.match.params.userid
+        });
+      })
+      .catch(err=>console.log(err));
+  }
+
+
+  logout(){
+    console.log('inside logout');
+    axios.get('http://localhost:3000/logout')
+      .catch(err=>console.log(err));
   }
 
   render() {
     return (
       <div>
       <h3>Document Portal</h3>
-      <NewDoc history={this.props.history}/>
-      <MyDocuments />
-      <SharedDoc history={this.props.history} style = {{alignItems: 'center'}}/>
+      CurrentUser: {this.props.match.params.userid}
+      <h6>Welcome {}!</h6>
+      <NewDoc history={this.props.history} user = {this.state.user}/>
+      <MyDocuments files = {this.state.files} user = {this.state.user} />
+      <SharedDoc history={this.props.history} user = {this.state.user}/>
+      <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', margin: '20'}}>
+      <RaisedButton
+        label="Logout"
+        onClick={this.logout.bind(this)}
+        backgroundColor = {String(colors.gray200)}
+      />
+    </div>
       </div>
     );
   }
