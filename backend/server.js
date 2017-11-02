@@ -1,5 +1,8 @@
 const express = require('express');
-const app = express();
+var http = require('http');
+var app = express();
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
 const bodyParser = require('body-parser');
 const path = require('path');
 var session = require('express-session');
@@ -7,6 +10,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local');
 const MongoStore = require('connect-mongo')(session);
 
+server.listen(3000);
 //Bodyparser parses fields sent in json format, axios send fields in json
 app.use(bodyParser.json());
 
@@ -57,7 +61,6 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', passport.authenticate('local'), (req, res) => {
-  console.log('reqUser', req.user);
   res.send(req.user);
 });
 
@@ -72,7 +75,6 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-  console.log('register body', req.body);
   const newUser = new User(req.body);
   newUser.save((err, result) => {
     if (err) {
@@ -95,27 +97,46 @@ app.post('/getdocument', (req, res)=>{
   });
 });
 
+async function findSharedDoc(user, sharedDoc){
+  for(var doc of user.sharedDoc){
+    var document = await Document.findById(doc);
+    sharedDoc.push(document);
+  }
+  return sharedDoc;
+}
+
 app.post('/getAllDocs', (req, res)=>{
-  console.log('inside get all docs user', req.user);
-  Document.find({user: req.body.id}, (err, docs) => {
+  var ownDoc = [];
+  var sharedDoc=[];
+  // res.send(`{ownDoc: ${ownDoc}, sharedDoc: ${sharedDoc}}`);
+  Document.find({user: req.body.userid}, (err, docs) => {
     if (err) {
       console.error(err);
     } else {
-      console.log('docs', docs);
-      res.send(docs);
+      ownDoc = docs.slice();
     }
-  });
+  })
+  .then(()=>{return User.findById(req.body.userid);})
+  .then((user)=>{
+    return findSharedDoc(user, sharedDoc);
+  })
+  .then(()=>{
+    res.send({ownDoc: ownDoc, sharedDoc: sharedDoc});
+    console.log(`{ownDocs: ${ownDoc}, sharedDoc: ${sharedDoc}}`);
+  })
+  .catch(err=>console.log(err));
 });
 
 app.post('/newdoc', (req, res) => {
   const newDoc = new Document(req.body);
-  newDoc.save((err, result) => {
-    if (err) {
-      res.send('there was some kind of error');
-    } else {
-      res.send(result);
-    }
-  });
+  newDoc.save((doc)=>{return doc;})
+  .then(resp=>{return User.findById(resp.user);})
+  .then(user=>{
+    user.ownDoc.push(newDoc._id);
+    user.save((resp)=>{
+      res.send(newDoc);});
+  })
+  .catch(err=>console.log(err));
 });
 
 app.post('/updatedoc', (req, res) => {
@@ -147,14 +168,57 @@ app.post('/deletedoc', (req, res) => {
 
 
 app.post('/addSharedDoc', (req, res) => {
-  Document.findById(req.body.id, (err, doc) => {
-    if (err) {
-      console.error(err);
-    } else {
-      res.send(doc);
-    }
+  //add document to the user's shared doc field, and add user to the contributor field to the doc
+  console.log('req.body', req.body);
+  User.findById(req.body.userid)
+  .then(user=>{
+    user.sharedDoc.push(req.body.docid);
+    return user.save();
+  })
+  .then(()=>{
+    Document.findById(req.body.docid, (err, doc) => {
+      if (err) {
+        res.send('Document does not exist! ', err);
+      } else {
+        doc.contributor.push(req.body.userid);
+        doc.save();
+        res.send(doc);
+      }
+    });
+  })
+  .catch(err=>{console.log('err in add shared doc', err);});
+});
+
+
+io.on('connection', function(socket) {
+  let currentName = '';
+  console.log('connected to sockets');
+  io.emit('message', 'here');
+  socket.on('join room', (roomName)=>{
+    console.log('submitted join room request for: ', roomName);
+
+    currentName = roomName;
+    socket.join(roomName);
+    io.in(roomName).clients((err, clients)=>{
+      console.log(clients);
+    });
+    io.to(roomName).emit('message', `someone successfully joined ${roomName}!`);
+    // socket.on('update', (contentState)=>{
+    //   io.to(roomName).emit('update', contentState);
+    // });
+
+  });
+  socket.on('leave room', (roomName)=>{
+    console.log(`leaving ${roomName}`);
+    socket.leave(roomName);
+  });
+
+  socket.on('update', (contentState, selection) => {
+    console.log('receieved update request');
+    io.to(currentName).emit('update', contentState);
   });
 });
+
 
 app.use((req, res, next) => {
   if (req.user) {
