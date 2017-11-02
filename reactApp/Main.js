@@ -6,6 +6,7 @@ import {CirclePicker} from 'react-color';
 import Popover from 'material-ui/Popover';
 import {Editor, EditorState, RichUtils, DefaultDraftBlockRenderMap} from 'draft-js';
 import {Map} from 'immutable';
+import axios from 'axios';
 import io from 'socket.io-client';
 import axios from 'axios';
 
@@ -195,6 +196,7 @@ class Main extends React.Component {
           onMouseDown = {()=>this.returnhome()}
           icon={<FontIcon className="material-icons"> home </FontIcon>}/>
       </div>
+<<<<<<< HEAD
       <div style={{borderTop: '2px solid lightGrey', margin: '20px', marginRight: '40px', marginLeft: '40px', padding: '10px'}}>
         <Editor
           ref = 'editor'
@@ -204,6 +206,16 @@ class Main extends React.Component {
           editorState = {this.state.editorState}
         />
       </div>
+=======
+      <Editor
+              ref = 'editor'
+              blockRenderMap={myBlockTypes}
+              customStyleMap = {this.state.inlineStyles}
+              placeholder = "Write something..."
+              onChange = {this.onChange.bind(this)}
+              editorState = {this.state.editorState}
+            />
+>>>>>>> master
     </div>
     );
   }
