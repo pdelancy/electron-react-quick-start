@@ -49,12 +49,10 @@ class DocumentPortal extends React.Component {
   }
 
   componentDidMount(){
-    console.log(this.props.match.params);
     axios.post('http://localhost:3000/getAllDocs', {
       userid: this.props.match.params.userid
     })
-      .then(response=>{
-        console.log('response', response.data);
+      .then((response) =>{
         this.setState({
           files: response.data.ownDoc,
           sharedDoc: response.data.sharedDoc,
@@ -66,9 +64,11 @@ class DocumentPortal extends React.Component {
 
 
   logout(){
-    console.log('inside logout');
     axios.get('http://localhost:3000/logout')
-      .catch(err=>console.log(err));
+    .then((resp) => {
+      this.props.history.replace('/');
+    })
+    .catch(err=>console.log(err));
   }
 
   render() {
