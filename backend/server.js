@@ -53,10 +53,12 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/login', (req, res) => {
   // res.sendFile(path.join(__dirname, "..", 'build', "login.html"));
-  res.send('get login');});
+  res.send('get login');
+});
 
 app.post('/login', passport.authenticate('local'), (req, res) => {
-  res.redirect('/');
+  console.log('reqUser', req.user);
+  res.send(req.user);
 });
 
 app.get('/register', (req, res) => {
@@ -72,6 +74,30 @@ app.post('/register', (req, res) => {
       res.json({success: false, error: err});
     } else {
       res.json({success: true});
+    }
+  });
+});
+
+app.post('/getdocument', (req, res)=>{
+  console.log('inside get document');
+  Document.findById(req.body.docid, (err, docs) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log('docs', docs);
+      res.send(docs);
+    }
+  });
+});
+
+app.post('/getAllDocs', (req, res)=>{
+  console.log('inside get all docs user', req.user);
+  Document.find({user: req.body.id}, (err, docs) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log('docs', docs);
+      res.send(docs);
     }
   });
 });
@@ -93,10 +119,37 @@ app.post('/updatedoc', (req, res) => {
       console.error(err);
     } else {
       doc.body = req.body.body;
-      res.send('body updated');
+      doc.save((err, result)=>{
+        if (err){
+          res.send(err);
+        } else {
+          res.send('body updated');
+        }
+      });
     }
-  })
-})
+  });
+});
+
+app.post('/deletedoc', (req, res) => {
+  Document.findByIdAndRemove(req.body.docid, (err, doc) => {
+    if (err) {
+      console.error(err);
+    } else {
+      res.send('Successfully deleted!');
+    }
+  });
+});
+
+
+app.post('/addSharedDoc', (req, res) => {
+  Document.findById(req.body.id, (err, doc) => {
+    if (err) {
+      console.error(err);
+    } else {
+      res.send(doc);
+    }
+  });
+});
 
 app.use((req, res, next) => {
   if (req.user) {
@@ -106,10 +159,11 @@ app.use((req, res, next) => {
   }
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, "..", 'build', 'index.dev.html'));
+app.get('/logout', function(req, res) {
+  req.logout();
+  res.redirect('/login');
 });
 
 app.listen(3000, function () {
-  console.log('Backend server for Electron App running on port 3000!')
-})
+  console.log('Backend server for Electron App running on port 3000!');
+});

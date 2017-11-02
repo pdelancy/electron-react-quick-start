@@ -37,11 +37,12 @@ class SharedDoc extends React.Component{
     this.setState({modalIsOpen: false});
   }
 
+
   addSharedDoc() {
     // alert('A new document is added' + this.state.value);
     // event.preventDefault();
     axios.post('http://localhost:3000/addSharedDoc',{
-      shareddocid: this.state.shareddocid,
+      id: this.state.shareddocid,
     })
     .then((response)=>{
       console.log(response);
