@@ -7,8 +7,24 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local');
 const MongoStore = require('connect-mongo')(session);
 
+const User = require('./User');
+const Document = require('./Document');
+
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGODB_URI);
+
+app.use(session({
+  secret: 'secret sauce',
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection
+  })
+}));
+
+app.use(express.static(path.join(__dirname, 'build')));
+
 //Bodyparser parses fields sent in json format, axios send fields in json
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
 
 //use passport to turn the user in to an id at the beginning and turn the id into an user at the end
 passport.serializeUser(function(user, done) {
@@ -33,38 +49,20 @@ passport.use(new LocalStrategy(function(username, password, done) {
 app.use(passport.initialize());
 app.use(passport.session());
 
-const User = require('./User');
-const Document = require('./Document');
-
-const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI);
-
-app.use(session({
-  secret: 'secret sauce',
-  store: new MongoStore({
-    mongooseConnection: mongoose.connection
-  })
-}));
-
-app.use(express.static(path.join(__dirname, 'build')));
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
-
 app.get('/login', (req, res) => {
   // res.sendFile(path.join(__dirname, "..", 'build', "login.html"));
   res.send('get login');
 });
 
 app.post('/login', passport.authenticate('local'), (req, res) => {
-  console.log('reqUser', req.user);
-  res.send(req.user);
+  res.status(200).json(req.user);
 });
 
 app.get('/register', (req, res) => {
   // res.sendFile(path.join(__dirname, "..", 'build', "register.html"));
   res.send('get register');
 });
+
 
 app.post('/register', (req, res) => {
   console.log('register body', req.body);
@@ -76,6 +74,19 @@ app.post('/register', (req, res) => {
       res.json({success: true});
     }
   });
+});
+
+app.use((req, res, next) => {
+  console.log('req.user', req.user);
+  if (!req.user) {
+    return res.redirect('/login');
+  } else {
+    return next();
+  }
+});
+
+app.get('/testing', (req, res) => {
+  res.status(200).send('it works! ' + req.user);
 });
 
 app.post('/getdocument', (req, res)=>{
@@ -91,7 +102,7 @@ app.post('/getdocument', (req, res)=>{
 });
 
 app.post('/getAllDocs', (req, res)=>{
-  console.log('inside get all docs user', req.user);
+  console.log('inside get all docs user', req.body);
   Document.find({user: req.body.id}, (err, docs) => {
     if (err) {
       console.error(err);
@@ -149,14 +160,6 @@ app.post('/addSharedDoc', (req, res) => {
       res.send(doc);
     }
   });
-});
-
-app.use((req, res, next) => {
-  if (req.user) {
-    next();
-  } else {
-    res.redirect('/login');
-  }
 });
 
 app.get('/logout', function(req, res) {
