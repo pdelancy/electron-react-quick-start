@@ -1,13 +1,11 @@
 import React from 'react';
-import Redirect from 'react-router';
-import { Switch, Route, Link } from 'react-router-DOM';
+import { Route } from 'react-router-DOM';
 import AppBar from 'material-ui/AppBar';
 import Main from './Main';
 import Login from './Login';
 import Register from './Register';
 import DocumentPortal from './DocumentPortal';
-import NewDoc from './NewDoc';
-
+import NewDoc from './Router';
 class Router extends React.Component {
   constructor(props){
     super(props);

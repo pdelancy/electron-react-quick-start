@@ -1,5 +1,8 @@
 const express = require('express');
-const app = express();
+var http = require('http');
+var app = express();
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
 const bodyParser = require('body-parser');
 const path = require('path');
 var session = require('express-session');
@@ -52,6 +55,7 @@ app.get('/register', (req, res) => {
   res.send('get register');
 });
 
+
 app.post('/register', (req, res) => {
   const newUser = new User(req.body);
   newUser.save((err, result) => {
@@ -91,26 +95,44 @@ app.post('/getdocument', (req, res)=>{
   });
 });
 
+async function findSharedDoc(user, sharedDoc){
+  for(var doc of user.sharedDoc){
+    var document = await Document.findById(doc);
+    sharedDoc.push(document);
+  }
+  return sharedDoc;
+}
+
 app.post('/getAllDocs', (req, res)=>{
   Document.find({user: req.body.id}, (err, docs) => {
     if (err) {
       console.error(err);
     } else {
-      console.log('docs', docs);
-      res.send(docs);
+      ownDoc = docs.slice();
     }
-  });
+  })
+  .then(()=>{return User.findById(req.body.userid);})
+  .then((user)=>{
+    return findSharedDoc(user, sharedDoc);
+  })
+  .then(()=>{
+    res.send({ownDoc: ownDoc, sharedDoc: sharedDoc});
+    console.log(`{ownDocs: ${ownDoc}, sharedDoc: ${sharedDoc}}`);
+  })
+  .catch(err=>console.log(err));
 });
 
 app.post('/newdoc', (req, res) => {
+  console.log(req.body);
   const newDoc = new Document(req.body);
-  newDoc.save((err, result) => {
-    if (err) {
-      res.send('there was some kind of error');
-    } else {
-      res.send(result);
-    }
-  });
+  newDoc.save((doc)=>{return doc;})
+  .then(resp=>{return User.findById(resp.user);})
+  .then(user=>{
+    user.ownDoc= user.ownDoc.concat(newDoc._id);
+    return user.save();
+  })
+  .then(()=>res.send(newDoc))
+  .catch(err=>console.log(err));
 });
 
 app.post('/updatedoc', (req, res) => {
@@ -132,8 +154,7 @@ app.post('/deletedoc', (req, res) => {
   });
 });
 
-
-app.post('/addSharedDoc', (req, res) => {
+app.post('/updatedoc', (req, res) => {
   Document.findById(req.body.id, (err, doc) => {
     (err) ? console.error(err) : res.send(doc);
   });

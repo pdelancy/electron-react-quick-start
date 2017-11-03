@@ -1,7 +1,7 @@
 import React from 'react';
 // import Redirect from 'react-router';
 import axios from 'axios';
-import {Redirect, Route, Link} from 'react-router-DOM';
+import {Redirect, Link} from 'react-router-DOM';
 
 class Register extends React.Component {
   constructor(props){
@@ -48,7 +48,7 @@ class Register extends React.Component {
           </button>
         </div>
         <Link to='/'>
-          <div style={{padding: 10}}>Back to Login</div>
+          <div style={{padding: '10'}}>Back to Login</div>
         </Link>
       </div>
     );

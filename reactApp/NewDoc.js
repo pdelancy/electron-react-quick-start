@@ -1,8 +1,8 @@
 import React from 'react';
 import Modal from 'react-modal';
 import RaisedButton from 'material-ui/RaisedButton';
-import Redirect from 'react-router';
 import {BrowserRouter, Switch, Route, Link} from 'react-router-DOM';
+import {EditorState, convertFromRaw, convertToRaw} from 'draft-js';
 import * as colors from 'material-ui/styles/colors';
 import axios from 'axios';
 
@@ -43,20 +43,20 @@ class NewDoc extends React.Component{
   createNewDoc() {
     // alert('A new document is added' + this.state.value);
     // event.preventDefault();
-    console.log(this.props.user);
+    console.log('create new doc', this.props.user);
     axios.post('http://localhost:3000/newdoc',{
       title: this.state.newdocname,
-      body: null,
+      body: JSON.stringify(convertToRaw(EditorState.createEmpty().getCurrentContent())),
       user: this.props.user
     })
     .then((response)=>{
       console.log(response);
       console.log("url", '/editor/' + response.data._id );
       this.props.history.push(`/editor/${this.props.user}/${response.data._id}`);
+      // this.closeModal();
     })
     .catch((err)=>{
       console.log('Error: ', err);
-      return null;
     });
   }
 
