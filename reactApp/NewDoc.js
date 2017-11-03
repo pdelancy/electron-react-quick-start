@@ -50,6 +50,7 @@ class NewDoc extends React.Component{
       user: this.props.user
     })
     .then((response)=>{
+      console.log(response);
       console.log("url", '/editor/' + response.data._id );
       this.props.history.push(`/editor/${this.props.user}/${response.data._id}`);
       // this.closeModal();

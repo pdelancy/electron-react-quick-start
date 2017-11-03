@@ -77,6 +77,7 @@ app.get('/register', (req, res) => {
   res.send('get register');
 });
 
+
 app.post('/register', (req, res) => {
   const newUser = new User(req.body);
   newUser.save((err, result) => {
@@ -87,6 +88,14 @@ app.post('/register', (req, res) => {
     }
   });
 });
+
+// app.use((req, res, next) => {
+//   if (req.user) {
+//     next();
+//   } else {
+//     res.redirect('/login');
+//   }
+// });
 
 app.post('/getdocument', (req, res)=>{
   console.log('inside get document');
@@ -131,14 +140,15 @@ app.post('/getAllDocs', (req, res)=>{
 });
 
 app.post('/newdoc', (req, res) => {
+  console.log(req.body);
   const newDoc = new Document(req.body);
   newDoc.save((doc)=>{return doc;})
   .then(resp=>{return User.findById(resp.user);})
   .then(user=>{
-    user.ownDoc.push(newDoc._id);
-    user.save((resp)=>{
-      res.send(newDoc);});
+    user.ownDoc= user.ownDoc.concat(newDoc._id);
+    return user.save();
   })
+  .then(()=>res.send(newDoc))
   .catch(err=>console.log(err));
 });
 
@@ -231,30 +241,11 @@ io.on('connection', function(socket) {
     socket.leave(roomName);
   });
 
-  socket.on('update', (contentState, selection) => {
+  socket.on('update', (contentState, specs) => {
     console.log('receieved update request');
-    io.to(currentName).emit('update', contentState);
+    io.to(currentName).emit('update', contentState, specs);
   });
 });
-
-
-app.use((req, res, next) => {
-  if (req.user) {
-    next();
-  } else {
-    res.redirect('/login');
-  }
-});
-
-// app.use((req, res, next) => {
-//   if (req.user) {
-//     next();
-//   } else {
-//     console.log('HERE');
-//     res.send('error');
-//   }
-// });
-
 
 server.listen(3000, function () {
   console.log('Backend server for Electron App running on port 3000!');

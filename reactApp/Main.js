@@ -37,17 +37,23 @@ class Main extends React.Component {
 
     this.state.socket.on('connect', function() {
       console.log(this);
-      self.state.socket.emit('join room', self.state.params.id);
+      self.state.socket.emit('join room', self.state.params.docid);
     });
     this.state.socket.on('message', (msg) => {
       console.log(msg);
     });
 
-    this.state.socket.on('update', (contentState, selection)=>{
+    this.state.socket.on('update', (contentState, specs)=>{
       console.log('receieved update request');
-      const currentSelection = this.state.editorState.getSelection();
+      let currentSelection = this.state.editorState.getSelection();
+      currentSelection = currentSelection.merge({
+        anchorKey: specs.anchorKey,
+        anchorOffset: specs.anchorOffset,
+        focusKey: specs.focusKey,
+        focusOffset: specs.focusOffset
+      });
       this.setState({
-        editorState: EditorState.forceSelection(EditorState.push(this.state.editorState, convertFromRaw(contentState)), selection)
+        editorState: EditorState.forceSelection(EditorState.push(this.state.editorState, convertFromRaw(contentState)), currentSelection)
       });
     });
   }
@@ -73,12 +79,19 @@ class Main extends React.Component {
   }
 
   onChange(editorState){
-    const selection = window.getSelection();
-    console.log(selection.anchorNode, selection.anchorOffset, selection.focusNode);
+    // const selection = window.getSelection();
+    // console.log(selection.anchorNode, selection.anchorOffset, selection.focusNode);
     this.setState({
       editorState
     });
-    this.state.socket.emit('update', convertToRaw(editorState.getCurrentContent()), editorState.getSelection());
+    const selection = editorState.getSelection();
+    this.state.socket.emit('update', convertToRaw(editorState.getCurrentContent()),
+      {
+        anchorKey: selection.anchorKey,
+        anchorOffset: selection.anchorOffset,
+        focusKey: selection.focusKey,
+        focusOffset: selection.focusOffset
+      });
   }
 
 
@@ -250,7 +263,6 @@ class Main extends React.Component {
 
 
   render(){
-    console.log(this.props.match.params.id);
     return (
     <div>
       <h3>Document ID: {this.state.docid}</h3> <br></br>
