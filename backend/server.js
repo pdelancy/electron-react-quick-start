@@ -13,6 +13,7 @@ const MongoStore = require('connect-mongo')(session);
 
 server.listen(3000);
 
+server.listen(3000);
 //Bodyparser parses fields sent in json format, axios send fields in json
 app.use(bodyParser.json());
 
@@ -57,12 +58,18 @@ app.use(express.static(path.join(__dirname, 'build')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-app.get('/', (req, res) => {
-  res.send('successully connected to the server');
+app.get('/login', (req, res) => {
+  // res.sendFile(path.join(__dirname, "..", 'build', "login.html"));
+  res.send('get login');
 });
 
 app.post('/login', passport.authenticate('local'), (req, res) => {
-  res.send('successfully logged in');
+  res.send(req.user);
+});
+
+app.get('/logout', function(req, res) {
+  req.logout();
+  res.send({success: true});
 });
 
 app.get('/register', (req, res) => {
@@ -71,7 +78,6 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-  console.log('register body', req.body);
   const newUser = new User(req.body);
   newUser.save((err, result) => {
     if (err) {
@@ -82,13 +88,83 @@ app.post('/register', (req, res) => {
   });
 });
 
+app.post('/getdocument', (req, res)=>{
+  console.log('inside get document');
+  Document.findById(req.body.docid, (err, docs) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log('docs', docs);
+      res.send(docs);
+    }
+  });
+});
+
+async function findSharedDoc(user, sharedDoc){
+  for(var doc of user.sharedDoc){
+    var document = await Document.findById(doc);
+    sharedDoc.push(document);
+  }
+  return sharedDoc;
+}
+
+app.post('/getAllDocs', (req, res)=>{
+  var ownDoc = [];
+  var sharedDoc=[];
+  // res.send(`{ownDoc: ${ownDoc}, sharedDoc: ${sharedDoc}}`);
+  Document.find({user: req.body.userid}, (err, docs) => {
+    if (err) {
+      console.error(err);
+    } else {
+      ownDoc = docs.slice();
+    }
+  })
+  .then(()=>{return User.findById(req.body.userid);})
+  .then((user)=>{
+    return findSharedDoc(user, sharedDoc);
+  })
+  .then(()=>{
+    res.send({ownDoc: ownDoc, sharedDoc: sharedDoc});
+    console.log(`{ownDocs: ${ownDoc}, sharedDoc: ${sharedDoc}}`);
+  })
+  .catch(err=>console.log(err));
+});
+
 app.post('/newdoc', (req, res) => {
   const newDoc = new Document(req.body);
-  newDoc.save((err, result) => {
+  newDoc.save((doc)=>{return doc;})
+  .then(resp=>{return User.findById(resp.user);})
+  .then(user=>{
+    user.ownDoc.push(newDoc._id);
+    user.save((resp)=>{
+      res.send(newDoc);});
+  })
+  .catch(err=>console.log(err));
+});
+
+app.post('/updatedoc', (req, res) => {
+  Document.findById(req.body.id, (err, doc) => {
     if (err) {
-      res.send('there was some kind of error');
+      console.error(err);
     } else {
-      res.send(result);
+      doc.body = req.body.body;
+      doc.save((err, result)=>{
+        if (err){
+          res.send(err);
+        } else {
+          res.send('body updated');
+        }
+      });
+    }
+  });
+});
+
+app.post('/deletedoc', (req, res) => {
+  Document.findByIdAndRemove(req.body.docid, (err, doc) => {
+    if (err) {
+      console.error(err);
+    } else {
+      res.send('Successfully deleted!');
     }
   });
 });
@@ -110,27 +186,27 @@ app.post('/updatedoc', (req, res) => {
 });
 
 app.post('/addSharedDoc', (req, res) => {
-  console.log(req.body.id);
-  Document.findById(req.body.id, (err, doc) => {
-    if (err) {
-      console.log(err);
-    } else if (!doc){
-      res.send('error finding doc');
-    } else {
-      res.send(doc.body);
-    }
-  });
+  //add document to the user's shared doc field, and add user to the contributor field to the doc
+  console.log('req.body', req.body);
+  User.findById(req.body.userid)
+  .then(user=>{
+    user.sharedDoc.push(req.body.docid);
+    return user.save();
+  })
+  .then(()=>{
+    Document.findById(req.body.docid, (err, doc) => {
+      if (err) {
+        res.send('Document does not exist! ', err);
+      } else {
+        doc.contributor.push(req.body.userid);
+        doc.save();
+        res.send(doc);
+      }
+    });
+  })
+  .catch(err=>{console.log('err in add shared doc', err);});
 });
 
-app.get('/documents', (req, res) => {
-  Document.find()
-  .then((docs)=>{
-    res.send(docs);
-  })
-  .catch((error)=>{
-    res.send(error);
-  });
-});
 
 io.on('connection', function(socket) {
   let currentName = '';
@@ -159,6 +235,15 @@ io.on('connection', function(socket) {
     console.log('receieved update request');
     io.to(currentName).emit('update', contentState);
   });
+});
+
+
+app.use((req, res, next) => {
+  if (req.user) {
+    next();
+  } else {
+    res.redirect('/login');
+  }
 });
 
 // app.use((req, res, next) => {

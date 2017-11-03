@@ -23,6 +23,8 @@ class Main extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      docid: this.props.match.params.docid,
+      title: '',
       editorState: EditorState.createEmpty(),
       // editorState: EditorState.createEmpty(),
       currentFontSize: 12,
@@ -51,13 +53,18 @@ class Main extends React.Component {
   }
 
   componentDidMount(){
-    console.log(this.props.match.params.id);
-    axios.post('http://localhost:3000/addSharedDoc', {
-      id: this.props.match.params.id
+    console.log(this.props.match.params.docid);
+    axios.post('http://localhost:3000/getdocument', {
+      docid: this.props.match.params.docid
     })
-    .then((response) => {
-      this.onChange(EditorState.createWithContent(convertFromRaw(response.data)));
-    });
+    .then(response=>{
+      console.log('response in main', JSON.parse(response.data.body));
+      this.setState({
+        editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(response.data.body))),
+        title: response.data.title
+      });
+    })
+    .catch(err=>console.log(err));
   }
 
   componentWillUnmount(){
@@ -93,8 +100,8 @@ class Main extends React.Component {
     return(
       <RaisedButton
         backgroundColor = {
-          this.state.editorState.getCurrentInlineStyle().has(style) ?
-          String(colors.gray200) :
+          // this.state.editorState.getCurrentInlineStyle().has(style) ?
+          // String(colors.gray200) :
           String(colors.gray800)
         }
         onMouseDown = {(e) => this.toggleFormat(e, style, block)}
@@ -104,7 +111,6 @@ class Main extends React.Component {
   }
 
   formatColor(color){
-    console.log('inlinestyles', this.state.inlineStyles);
     var newInlineStyles = Object.assign({}, this.state.inlineStyles, {[color.hex]: {color: color.hex}});
     this.setState({
       inlineStyles: newInlineStyles,
@@ -113,7 +119,7 @@ class Main extends React.Component {
   }
 
   applyIncreaseFontSize(shrink){
-    console.log('increase font size', this.state.inlineStyles);
+    // console.log('increase font size', this.state.inlineStyles);
     var newFontSize = this.state.currentFontSize + (shrink ? -4 : 4);
     var newInlineStyles = Object.assign({}, this.state.inlineStyles, {[newFontSize]: {fontSize: `${newFontSize}px`}});
     var i = RichUtils.toggleInlineStyle(this.state.editorState, String(this.state.currentFontSize));
@@ -169,11 +175,12 @@ class Main extends React.Component {
   }
 
   updateDoc(id, editorState){
-    // console.log('id in updateDoc', id);
+    console.log('id in updateDoc', id);
     // console.log(typeof id);
     // console.log('editorState', editorState);
+
     axios.post('http://localhost:3000/updatedoc', {
-      id,
+      id: id,
       body: JSON.stringify(convertToRaw(editorState.getCurrentContent())),
     })
     .then(resp=>{
@@ -185,27 +192,69 @@ class Main extends React.Component {
   saveChanges(){
     return(
       <RaisedButton
-        backgroundColor = {String(colors.gray200)}
-        onMouseDown ={()=>(this.updateDoc(this.props.match.params.id, this.state.editorState))}
+        primary={true}
+        // backgroundColor = {String(colors.gray200)}
+        onMouseDown ={()=>(this.updateDoc(this.props.match.params.docid, this.state.editorState))}
         icon={<FontIcon className="material-icons"> save </FontIcon>}
       />
     );
   }
 
-  returnhome(){
+  returnHome(){
+    return(
+      <RaisedButton
+        backgroundColor="#a4c639"
+        onMouseDown = {()=>this.returnDocPortal()}
+        icon={<FontIcon className="material-icons"> home </FontIcon>}/>
+    );
+  }
+
+  returnDocPortal(){
+    console.log('/document/'+ this.props.match.params.userid);
     var returnHomePage = confirm("Are you sure you want to return to main page?");
     if (returnHomePage){
-      this.props.history.push('/document');
+      this.props.history.push('/document/'+ this.props.match.params.userid);
     }else{
       return;
     }
   }
 
+  deleteDoc(){
+    return(
+      <RaisedButton
+         secondary={true}
+        // backgroundColor = {String(colors.gray800)}
+        onMouseDown = {()=>this.delete()}
+        icon={<FontIcon className="material-icons"> delete </FontIcon>}/>
+    );
+  }
+
+  delete(){
+    console.log('/delete/'+ this.props.match.params.userid + '/' + this.props.match.params.docid);
+    var deleteConfirm = confirm("Are you sure you want to delete this document?");
+    if (deleteConfirm){
+      axios.post('http://localhost:3000/deletedoc', {
+        docid: this.props.match.params.docid,
+      })
+      .then(resp=>{
+        return alert('Document Deleted!');
+      })
+      .then(resp=>{
+        this.props.history.push('/document/'+ this.props.match.params.userid);
+      })
+      .catch(err=>console.log(err));
+    }else{
+      return;
+    }
+  }
+
+
   render(){
     console.log(this.props.match.params.id);
     return (
     <div>
-      <div>Document ID: {this.props.match.params.id}</div>
+      <h3>Document ID: {this.state.docid}</h3> <br></br>
+      <h3> Title: {this.state.title}</h3>
       <div className = "toolbar">
         {this.formatButton({icon: 'format_bold', style: 'BOLD'})}
         {this.formatButton({icon: 'format_italic', style: 'ITALIC'})}
@@ -221,10 +270,8 @@ class Main extends React.Component {
       </div>
       <div className = "toolbar">
         {this.saveChanges()}
-        <RaisedButton
-          backgroundColor = {String(colors.gray800)}
-          onMouseDown = {()=>this.returnhome()}
-          icon={<FontIcon className="material-icons"> home </FontIcon>}/>
+        {this.returnHome()}
+        {this.deleteDoc()}
       </div>
       <div style={{borderTop: '2px solid lightGrey', margin: '20px', marginRight: '40px', marginLeft: '40px', padding: '10px'}}>
         <Editor
