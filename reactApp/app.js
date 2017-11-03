@@ -1,11 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Switch, Route, Link, HashRouter} from 'react-router-DOM';
+import { Route, HashRouter} from 'react-router-DOM';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 // import injectTapEventPlugin from 'react-tap-event-plugin';
 import Router from './Router';
-// import Login from './Login';
-// import Register from './Register';
+
 
 require('../css/Draft.css');
 

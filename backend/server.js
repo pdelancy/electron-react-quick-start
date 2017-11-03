@@ -10,6 +10,9 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local');
 const MongoStore = require('connect-mongo')(session);
 
+
+server.listen(3000);
+
 server.listen(3000);
 //Bodyparser parses fields sent in json format, axios send fields in json
 app.use(bodyParser.json());
@@ -74,6 +77,7 @@ app.get('/register', (req, res) => {
   res.send('get register');
 });
 
+
 app.post('/register', (req, res) => {
   const newUser = new User(req.body);
   newUser.save((err, result) => {
@@ -84,6 +88,14 @@ app.post('/register', (req, res) => {
     }
   });
 });
+
+// app.use((req, res, next) => {
+//   if (req.user) {
+//     next();
+//   } else {
+//     res.redirect('/login');
+//   }
+// });
 
 app.post('/getdocument', (req, res)=>{
   console.log('inside get document');
@@ -128,14 +140,15 @@ app.post('/getAllDocs', (req, res)=>{
 });
 
 app.post('/newdoc', (req, res) => {
+  console.log(req.body);
   const newDoc = new Document(req.body);
   newDoc.save((doc)=>{return doc;})
   .then(resp=>{return User.findById(resp.user);})
   .then(user=>{
-    user.ownDoc.push(newDoc._id);
-    user.save((resp)=>{
-      res.send(newDoc);});
+    user.ownDoc= user.ownDoc.concat(newDoc._id);
+    return user.save();
   })
+  .then(()=>res.send(newDoc))
   .catch(err=>console.log(err));
 });
 
@@ -166,6 +179,21 @@ app.post('/deletedoc', (req, res) => {
   });
 });
 
+app.post('/updatedoc', (req, res) => {
+
+  Document.findById(req.body.id, (err, doc) => {
+    if (err) {
+      console.error(err);
+    } else {
+      doc.body = req.body.body;
+      doc.save()
+      .then(()=>{
+        console.log('body updated');
+        res.send('body updated');
+      });
+    }
+  });
+});
 
 app.post('/addSharedDoc', (req, res) => {
   //add document to the user's shared doc field, and add user to the contributor field to the doc
@@ -213,21 +241,12 @@ io.on('connection', function(socket) {
     socket.leave(roomName);
   });
 
-  socket.on('update', (contentState, selection) => {
+  socket.on('update', (contentState, specs) => {
     console.log('receieved update request');
-    io.to(currentName).emit('update', contentState);
+    io.to(currentName).emit('update', contentState, specs);
   });
 });
 
-
-app.use((req, res, next) => {
-  if (req.user) {
-    next();
-  } else {
-    res.redirect('/login');
-  }
-});
-
-app.listen(3000, function () {
+server.listen(3000, function () {
   console.log('Backend server for Electron App running on port 3000!');
 });
