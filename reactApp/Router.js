@@ -15,8 +15,9 @@ class Router extends React.Component {
         <AppBar title = "RE_EDIT" />
         <Route path={"/"} exact component = {Login} />
         <Route path={"/register"} exact component = {Register} />
-        <Route path={"/editor/:id"} exact component = {Main} />
-        <Route path={"/document"} exact component = {DocumentPortal} />
+        <Route path={"/editor/:userid/:docid"} exact component = {Main} />
+        <Route path={"/document/:userid"} exact component = {DocumentPortal} />
+        <Route path={"/newdocument"} exact component = {NewDoc} />
       </div>
     );
   }

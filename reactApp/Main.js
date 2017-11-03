@@ -4,7 +4,7 @@ import RaisedButton from 'material-ui/RaisedButton';
 import * as colors from 'material-ui/styles/colors';
 import {CirclePicker} from 'react-color';
 import Popover from 'material-ui/Popover';
-import {Editor, EditorState, RichUtils, DefaultDraftBlockRenderMap} from 'draft-js';
+import {Editor, EditorState, RichUtils, DefaultDraftBlockRenderMap, convertFromRaw, convertToRaw} from 'draft-js';
 import {Map} from 'immutable';
 import axios from 'axios';
 import io from 'socket.io-client';
@@ -23,29 +23,58 @@ class Main extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      docid: this.props.match.params.docid,
+      title: '',
       editorState: EditorState.createEmpty(),
       currentFontSize: 12,
-      inlineStyles: {}
+      inlineStyles: {},
+      socket: io('http://localhost:3000'),
     };
-    this.socket = io('http://localhost:3000');
 
-    this.socket.on('connect', function() {
-      console.log('Connected');
+    this.state.socket.on('connect', function() {
+      console.log(this);
+      self.state.socket.emit('join room', self.state.params.id);
+    });
+    this.state.socket.on('message', (msg) => {
+      console.log(msg);
     });
 
-    this.socket.emit('joinRoom', this.props.match.params.id);
-
-    this.socket.on('update', (editorState)=>{
+    this.state.socket.on('update', (contentState, selection)=>{
+      console.log('receieved update request');
+      const currentSelection = this.state.editorState.getSelection();
       this.setState({
-        editorState: editorState
+        editorState: EditorState.forceSelection(EditorState.push(this.state.editorState, convertFromRaw(contentState)), selection)
       });
     });
   }
 
+  componentDidMount(){
+    console.log(this.props.match.params.docid);
+    axios.post('http://localhost:3000/getdocument', {
+      docid: this.props.match.params.docid
+    })
+    .then(response=>{
+      console.log('response in main', JSON.parse(response.data.body));
+      this.setState({
+        editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(response.data.body))),
+        title: response.data.title
+      });
+    })
+    .catch(err=>console.log(err));
+  }
+
+  componentWillUnmount(){
+    console.log('in componentWillUnmount');
+    this.state.socket.emit('leave room', this.state.params.id);
+  }
+
   onChange(editorState){
+    const selection = window.getSelection();
+    console.log(selection.anchorNode, selection.anchorOffset, selection.focusNode);
     this.setState({
       editorState
     });
+    this.state.socket.emit('update', convertToRaw(editorState.getCurrentContent()), editorState.getSelection());
   }
 
   toggleFormat(e, style, block){
@@ -66,8 +95,8 @@ class Main extends React.Component {
     return(
       <RaisedButton
         backgroundColor = {
-          this.state.editorState.getCurrentInlineStyle().has(style) ?
-          String(colors.gray200) :
+          // this.state.editorState.getCurrentInlineStyle().has(style) ?
+          // String(colors.gray200) :
           String(colors.gray800)
         }
         onMouseDown = {(e) => this.toggleFormat(e, style, block)}
@@ -77,7 +106,6 @@ class Main extends React.Component {
   }
 
   formatColor(color){
-    console.log('inlinestyles', this.state.inlineStyles);
     var newInlineStyles = Object.assign({}, this.state.inlineStyles, {[color.hex]: {color: color.hex}});
     this.setState({
       inlineStyles: newInlineStyles,
@@ -86,7 +114,7 @@ class Main extends React.Component {
   }
 
   applyIncreaseFontSize(shrink){
-    console.log('increase font size', this.state.inlineStyles);
+    // console.log('increase font size', this.state.inlineStyles);
     var newFontSize = this.state.currentFontSize + (shrink ? -4 : 4);
     var newInlineStyles = Object.assign({}, this.state.inlineStyles, {[newFontSize]: {fontSize: `${newFontSize}px`}});
     this.setState({
@@ -141,9 +169,13 @@ class Main extends React.Component {
   }
 
   updateDoc(id, editorState){
+    console.log('id in updateDoc', id);
+    // console.log(typeof id);
+    // console.log('editorState', editorState);
+
     axios.post('http://localhost:3000/updatedoc', {
-      id,
-      editorState
+      id: id,
+      body: JSON.stringify(convertToRaw(editorState.getCurrentContent())),
     })
     .then(resp=>{
       alert('Document Saved!');
@@ -154,27 +186,69 @@ class Main extends React.Component {
   saveChanges(){
     return(
       <RaisedButton
-        backgroundColor = {String(colors.gray200)}
-        onMouseDown ={()=>(this.updateDoc(this.props.match.params.id, this.state.editorState))}
+        primary={true}
+        // backgroundColor = {String(colors.gray200)}
+        onMouseDown ={()=>(this.updateDoc(this.props.match.params.docid, this.state.editorState))}
         icon={<FontIcon className="material-icons"> save </FontIcon>}
       />
     );
   }
 
-  returnhome(){
+  returnHome(){
+    return(
+      <RaisedButton
+        backgroundColor="#a4c639"
+        onMouseDown = {()=>this.returnDocPortal()}
+        icon={<FontIcon className="material-icons"> home </FontIcon>}/>
+    );
+  }
+
+  returnDocPortal(){
+    console.log('/document/'+ this.props.match.params.userid);
     var returnHomePage = confirm("Are you sure you want to return to main page?");
     if (returnHomePage){
-      this.props.history.push('/document');
+      this.props.history.push('/document/'+ this.props.match.params.userid);
     }else{
       return;
     }
   }
 
+  deleteDoc(){
+    return(
+      <RaisedButton
+         secondary={true}
+        // backgroundColor = {String(colors.gray800)}
+        onMouseDown = {()=>this.delete()}
+        icon={<FontIcon className="material-icons"> delete </FontIcon>}/>
+    );
+  }
+
+  delete(){
+    console.log('/delete/'+ this.props.match.params.userid + '/' + this.props.match.params.docid);
+    var deleteConfirm = confirm("Are you sure you want to delete this document?");
+    if (deleteConfirm){
+      axios.post('http://localhost:3000/deletedoc', {
+        docid: this.props.match.params.docid,
+      })
+      .then(resp=>{
+        return alert('Document Deleted!');
+      })
+      .then(resp=>{
+        this.props.history.push('/document/'+ this.props.match.params.userid);
+      })
+      .catch(err=>console.log(err));
+    }else{
+      return;
+    }
+  }
+
+
   render(){
     console.log(window.innerWidth);
     return (
     <div>
-      Document ID: {this.props.match.params.id}
+      <h3>Document ID: {this.state.docid}</h3> <br></br>
+      <h3> Title: {this.state.title}</h3>
       <div className = "toolbar">
         {this.formatButton({icon: 'format_bold', style: 'BOLD'})}
         {this.formatButton({icon: 'format_italic', style: 'ITALIC'})}
@@ -190,10 +264,8 @@ class Main extends React.Component {
       </div>
       <div className = "toolbar">
         {this.saveChanges()}
-        <RaisedButton
-          backgroundColor = {String(colors.gray800)}
-          onMouseDown = {()=>this.returnhome()}
-          icon={<FontIcon className="material-icons"> home </FontIcon>}/>
+        {this.returnHome()}
+        {this.deleteDoc()}
       </div>
       <Editor
               ref = 'editor'

@@ -18,9 +18,7 @@ class Login extends React.Component {
       password: this.state.password
     })
     .then((response)=>{
-      console.log(response);
-      console.log(this.props.history);
-      this.props.history.push('/document');
+      this.props.history.push('/document/'+response.data._id);
     })
     .catch((err)=>{
       console.log('Error: ', err);
@@ -32,7 +30,6 @@ class Login extends React.Component {
     console.log(this.props.location.pathname);
     return(
       <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column'}}>
-
         <h1>LOGIN</h1>
         <br/>
         <input
@@ -54,7 +51,7 @@ class Login extends React.Component {
           </button>
         </div>
         <Link to='/register'>
-          <div style={{padding: 10}}>Not a member? Click Here to Register</div>
+          <div style={{padding: '10'}}>Not a member? Click Here to Register</div>
         </Link>
         {/* <Route path="/editor" component = {Main}/> */}
       </div>
