@@ -53,7 +53,7 @@ class DocumentPortal extends React.Component {
     axios.post('http://localhost:3000/getAllDocs', {
       userid: this.props.match.params.userid
     })
-      .then(response=>{
+    .then(response=>{
         console.log('response', response.data);
         this.setState({
           files: response.data.ownDoc,
