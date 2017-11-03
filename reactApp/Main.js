@@ -26,24 +26,34 @@ class Main extends React.Component {
       docid: this.props.match.params.docid,
       title: '',
       editorState: EditorState.createEmpty(),
+      // editorState: EditorState.createEmpty(),
       currentFontSize: 12,
       inlineStyles: {},
       socket: io('http://localhost:3000'),
+      params: this.props.match.params
     };
+    console.log(this);
+    const self = this;
 
     this.state.socket.on('connect', function() {
       console.log(this);
-      self.state.socket.emit('join room', self.state.params.id);
+      self.state.socket.emit('join room', self.state.params.docid);
     });
     this.state.socket.on('message', (msg) => {
       console.log(msg);
     });
 
-    this.state.socket.on('update', (contentState, selection)=>{
+    this.state.socket.on('update', (contentState, specs)=>{
       console.log('receieved update request');
-      const currentSelection = this.state.editorState.getSelection();
+      let currentSelection = this.state.editorState.getSelection();
+      currentSelection = currentSelection.merge({
+        anchorKey: specs.anchorKey,
+        anchorOffset: specs.anchorOffset,
+        focusKey: specs.focusKey,
+        focusOffset: specs.focusOffset
+      });
       this.setState({
-        editorState: EditorState.forceSelection(EditorState.push(this.state.editorState, convertFromRaw(contentState)), selection)
+        editorState: EditorState.forceSelection(EditorState.push(this.state.editorState, convertFromRaw(contentState)), currentSelection)
       });
     });
   }
@@ -69,13 +79,21 @@ class Main extends React.Component {
   }
 
   onChange(editorState){
-    const selection = window.getSelection();
-    console.log(selection.anchorNode, selection.anchorOffset, selection.focusNode);
+    // const selection = window.getSelection();
+    // console.log(selection.anchorNode, selection.anchorOffset, selection.focusNode);
     this.setState({
       editorState
     });
-    this.state.socket.emit('update', convertToRaw(editorState.getCurrentContent()), editorState.getSelection());
+    const selection = editorState.getSelection();
+    this.state.socket.emit('update', convertToRaw(editorState.getCurrentContent()),
+      {
+        anchorKey: selection.anchorKey,
+        anchorOffset: selection.anchorOffset,
+        focusKey: selection.focusKey,
+        focusOffset: selection.focusOffset
+      });
   }
+
 
   toggleFormat(e, style, block){
     // this.refs.editor.focus();
@@ -117,9 +135,10 @@ class Main extends React.Component {
     // console.log('increase font size', this.state.inlineStyles);
     var newFontSize = this.state.currentFontSize + (shrink ? -4 : 4);
     var newInlineStyles = Object.assign({}, this.state.inlineStyles, {[newFontSize]: {fontSize: `${newFontSize}px`}});
+    var i = RichUtils.toggleInlineStyle(this.state.editorState, String(this.state.currentFontSize));
     this.setState({
       inlineStyles: newInlineStyles,
-      editorState: RichUtils.toggleInlineStyle(this.state.editorState, String(newFontSize)),
+      editorState: RichUtils.toggleInlineStyle(i, String(newFontSize)),
       currentFontSize: newFontSize
     });
   }
@@ -244,7 +263,6 @@ class Main extends React.Component {
 
 
   render(){
-    console.log(window.innerWidth);
     return (
     <div>
       <h3>Document ID: {this.state.docid}</h3> <br></br>
@@ -267,14 +285,16 @@ class Main extends React.Component {
         {this.returnHome()}
         {this.deleteDoc()}
       </div>
-      <Editor
-              ref = 'editor'
-              blockRenderMap={myBlockTypes}
-              customStyleMap = {this.state.inlineStyles}
-              placeholder = "Write something..."
-              onChange = {this.onChange.bind(this)}
-              editorState = {this.state.editorState}
-            />
+      <div style={{borderTop: '2px solid lightGrey', margin: '20px', marginRight: '40px', marginLeft: '40px', padding: '10px'}}>
+        <Editor
+          ref = 'editor'
+          blockRenderMap={myBlockTypes}
+          customStyleMap = {this.state.inlineStyles}
+          onChange = {this.onChange.bind(this)}
+          editorState = {this.state.editorState}
+        />
+      </div>
+
     </div>
     );
   }
