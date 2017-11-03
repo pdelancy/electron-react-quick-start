@@ -86,12 +86,12 @@ class NewDoc extends React.Component{
                 onChange={(e)=>(this.setState({newdocname: e.target.value}))}
                 value={this.state.newdocname}
               /><br/>
-          <label>Document Password</label>
+          {/* <label>Document Password</label>
           <input type="text"
                 ref="new_doc_pw"
                 placeholder="Enter new document password"
                 onChange={(e)=>(this.setState({newdocpw: e.target.value}))}
-                value={this.state.newdocpw} /><br/>
+                value={this.state.newdocpw} /><br/> */}
           <button onClick = {()=>this.createNewDoc()} >Submit </button><br/>
           <button onClick={this.closeModal}>close</button>
         </Modal>

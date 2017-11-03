@@ -10,6 +10,9 @@ const Document = mongoose.model('Document', {
   body: {
     type: String
   },
+  inlineStyles: {
+    type: Object
+  },
   user: {
     type: Schema.ObjectId,
     ref: 'User',
@@ -17,7 +20,10 @@ const Document = mongoose.model('Document', {
   contributor: [{
     type: Schema.ObjectId,
     ref: 'User'
-  }]
+  }],
+  history: {
+    type: Object
+  }
 });
 
 module.exports = Document;

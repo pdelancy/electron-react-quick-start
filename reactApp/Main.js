@@ -8,6 +8,7 @@ import {Editor, EditorState, RichUtils, DefaultDraftBlockRenderMap, convertFromR
 import {Map} from 'immutable';
 import axios from 'axios';
 import io from 'socket.io-client';
+import ViewHistory from './ViewHistory';
 
 const myBlockTypes = DefaultDraftBlockRenderMap.merge(new Map({
   right: {
@@ -30,13 +31,13 @@ class Main extends React.Component {
       currentFontSize: 12,
       inlineStyles: {},
       socket: io('http://localhost:3000'),
-      params: this.props.match.params
+      params: this.props.match.params,
+      history: {},
+      showHistory: false
     };
-    console.log(this);
     const self = this;
 
     this.state.socket.on('connect', function() {
-      console.log(this);
       self.state.socket.emit('join room', self.state.params.docid);
     });
     this.state.socket.on('message', (msg) => {
@@ -44,7 +45,6 @@ class Main extends React.Component {
     });
 
     this.state.socket.on('update', (contentState, specs)=>{
-      console.log('receieved update request');
       let currentSelection = this.state.editorState.getSelection();
       currentSelection = currentSelection.merge({
         anchorKey: specs.anchorKey,
@@ -59,7 +59,6 @@ class Main extends React.Component {
   }
 
   componentDidMount(){
-    console.log(this.props.match.params.docid);
     axios.post('http://localhost:3000/getdocument', {
       docid: this.props.match.params.docid
     })
@@ -67,14 +66,14 @@ class Main extends React.Component {
       console.log('response in main', JSON.parse(response.data.body));
       this.setState({
         editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(response.data.body))),
-        title: response.data.title
+        title: response.data.title,
+        history: response.data.history
       });
     })
     .catch(err=>console.log(err));
   }
 
   componentWillUnmount(){
-    console.log('in componentWillUnmount');
     this.state.socket.emit('leave room', this.state.params.id);
   }
 
@@ -195,6 +194,7 @@ class Main extends React.Component {
     axios.post('http://localhost:3000/updatedoc', {
       id: id,
       body: JSON.stringify(convertToRaw(editorState.getCurrentContent())),
+      inlineStyles: this.state.inlineStyles
     })
     .then(resp=>{
       alert('Document Saved!');
@@ -261,6 +261,15 @@ class Main extends React.Component {
     }
   }
 
+  viewHisotry(){
+    return(
+      <RaisedButton
+        backgroundColor = "#FFCA28"
+        onMouseDown = {()=>this.setState({showHistory: true})}
+        icon={<FontIcon className="material-icons"> history </FontIcon>}/>
+    );
+  }
+
 
   render(){
     return (
@@ -284,7 +293,9 @@ class Main extends React.Component {
         {this.saveChanges()}
         {this.returnHome()}
         {this.deleteDoc()}
+        {this.viewHisotry()}
       </div>
+      {this.state.showHistory ? <ViewHistory history = {this.state.history}/> : <div></div> }
       <div style={{borderTop: '2px solid lightGrey', margin: '20px', marginRight: '40px', marginLeft: '40px', padding: '10px'}}>
         <Editor
           ref = 'editor'

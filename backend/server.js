@@ -120,6 +120,7 @@ async function findSharedDoc(user, sharedDoc){
 app.post('/getAllDocs', (req, res)=>{
   var ownDoc = [];
   var sharedDoc=[];
+  console.log('body in get all docs', req.body);
   // res.send(`{ownDoc: ${ownDoc}, sharedDoc: ${sharedDoc}}`);
   Document.find({user: req.body.userid}, (err, docs) => {
     if (err) {
@@ -158,6 +159,10 @@ app.post('/updatedoc', (req, res) => {
       console.error(err);
     } else {
       doc.body = req.body.body;
+      doc.inlineStyles = req.body.inlineStyles;
+      var timeStamp = Date.now();
+      doc.history = Object.assign({}, doc.history, { [timeStamp]: {EditorState: req.body.body, inlineStyles: req.body.inlineStyles}});
+      console.log('document after updated', doc);
       doc.save((err, result)=>{
         if (err){
           res.send(err);
@@ -168,6 +173,14 @@ app.post('/updatedoc', (req, res) => {
     }
   });
 });
+
+// app.post('/history', (req, res)=>{
+//   Document.findById(req.body.id, (err, doc)=>{
+//     if(err){
+//
+//     }
+//   })
+// });
 
 app.post('/deletedoc', (req, res) => {
   Document.findByIdAndRemove(req.body.docid, (err, doc) => {
