@@ -4,11 +4,10 @@ import RaisedButton from 'material-ui/RaisedButton';
 import * as colors from 'material-ui/styles/colors';
 import {CirclePicker} from 'react-color';
 import Popover from 'material-ui/Popover';
-import {Editor, EditorState, RichUtils, DefaultDraftBlockRenderMap} from 'draft-js';
+import {Editor, EditorState, RichUtils, DefaultDraftBlockRenderMap, convertFromRaw, convertToRaw} from 'draft-js';
 import {Map} from 'immutable';
 import axios from 'axios';
 import io from 'socket.io-client';
-import axios from 'axios';
 
 const myBlockTypes = DefaultDraftBlockRenderMap.merge(new Map({
   right: {
@@ -25,29 +24,56 @@ class Main extends React.Component {
     super(props);
     this.state = {
       editorState: EditorState.createEmpty(),
+      // editorState: EditorState.createEmpty(),
       currentFontSize: 12,
-      inlineStyles: {}
+      inlineStyles: {},
+      socket: io('http://localhost:3000'),
+      params: this.props.match.params
     };
-    this.socket = io('http://localhost:3000');
+    console.log(this);
+    const self = this;
 
-    this.socket.on('connect', function() {
-      console.log('Connected');
+    this.state.socket.on('connect', function() {
+      console.log(this);
+      self.state.socket.emit('join room', self.state.params.id);
+    });
+    this.state.socket.on('message', (msg) => {
+      console.log(msg);
     });
 
-    this.socket.emit('joinRoom', this.props.match.params.id);
-
-    this.socket.on('update', (editorState)=>{
+    this.state.socket.on('update', (contentState, selection)=>{
+      console.log('receieved update request');
+      const currentSelection = this.state.editorState.getSelection();
       this.setState({
-        editorState: editorState
+        editorState: EditorState.forceSelection(EditorState.push(this.state.editorState, convertFromRaw(contentState)), selection)
       });
     });
   }
 
+  componentDidMount(){
+    console.log(this.props.match.params.id);
+    axios.post('http://localhost:3000/addSharedDoc', {
+      id: this.props.match.params.id
+    })
+    .then((response) => {
+      this.onChange(EditorState.createWithContent(convertFromRaw(response.data)));
+    });
+  }
+
+  componentWillUnmount(){
+    console.log('in componentWillUnmount');
+    this.state.socket.emit('leave room', this.state.params.id);
+  }
+
   onChange(editorState){
+    const selection = window.getSelection();
+    console.log(selection.anchorNode, selection.anchorOffset, selection.focusNode);
     this.setState({
       editorState
     });
+    this.state.socket.emit('update', convertToRaw(editorState.getCurrentContent()), editorState.getSelection());
   }
+
 
   toggleFormat(e, style, block){
     // this.refs.editor.focus();
@@ -143,9 +169,12 @@ class Main extends React.Component {
   }
 
   updateDoc(id, editorState){
+    // console.log('id in updateDoc', id);
+    // console.log(typeof id);
+    // console.log('editorState', editorState);
     axios.post('http://localhost:3000/updatedoc', {
       id,
-      editorState
+      body: JSON.stringify(convertToRaw(editorState.getCurrentContent())),
     })
     .then(resp=>{
       alert('Document Saved!');
@@ -173,9 +202,10 @@ class Main extends React.Component {
   }
 
   render(){
+    console.log(this.props.match.params.id);
     return (
     <div>
-      Document ID: {this.props.match.params.id}
+      <div>Document ID: {this.props.match.params.id}</div>
       <div className = "toolbar">
         {this.formatButton({icon: 'format_bold', style: 'BOLD'})}
         {this.formatButton({icon: 'format_italic', style: 'ITALIC'})}
@@ -196,7 +226,6 @@ class Main extends React.Component {
           onMouseDown = {()=>this.returnhome()}
           icon={<FontIcon className="material-icons"> home </FontIcon>}/>
       </div>
-<<<<<<< HEAD
       <div style={{borderTop: '2px solid lightGrey', margin: '20px', marginRight: '40px', marginLeft: '40px', padding: '10px'}}>
         <Editor
           ref = 'editor'
@@ -206,16 +235,7 @@ class Main extends React.Component {
           editorState = {this.state.editorState}
         />
       </div>
-=======
-      <Editor
-              ref = 'editor'
-              blockRenderMap={myBlockTypes}
-              customStyleMap = {this.state.inlineStyles}
-              placeholder = "Write something..."
-              onChange = {this.onChange.bind(this)}
-              editorState = {this.state.editorState}
-            />
->>>>>>> master
+
     </div>
     );
   }

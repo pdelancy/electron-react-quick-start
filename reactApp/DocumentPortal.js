@@ -1,19 +1,38 @@
 import React from 'react';
 import NewDoc from './NewDoc';
 import SharedDoc from './SharedDoc';
+import axios from 'axios';
+import {Link} from 'react-router-DOM';
 
 
-var newDocs = ['doc1', 'doc2', 'doc3'];
+// var newDocs = ['doc1', 'doc2', 'doc3'];
 
 class MyDocuments extends React.Component {
 
+  constructor(props){
+    super(props);
+    this.state={
+      docs: []
+    };
+  }
+
+  componentDidMount(){
+    axios.get('http://localhost:3000/documents')
+    .then((docs)=>{
+      this.setState({
+        docs: docs.data,
+      });
+    });
+  }
+
   render(){
+    console.log(this.state.docs);
     return(
       <div className = 'container'>
         <h3> My Documents </h3>
         <ul>
-        {newDocs.map((doc)=>{return(
-          <li>{doc}</li>);
+        {this.state.docs.map((doc)=>{return(
+          <li><Link to={'/editor/' + doc._id}>{doc.title}</Link></li>);
         })}
       </ul>
       </div>

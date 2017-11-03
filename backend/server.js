@@ -1,13 +1,17 @@
 const express = require('express');
-const app = express();
+var http = require('http');
+var app = express();
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
 const bodyParser = require('body-parser');
 const path = require('path');
 var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 const MongoStore = require('connect-mongo')(session);
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+
+
+server.listen(3000);
 
 //Bodyparser parses fields sent in json format, axios send fields in json
 app.use(bodyParser.json());
@@ -53,12 +57,12 @@ app.use(express.static(path.join(__dirname, 'build')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-app.get('/login', (req, res) => {
-  // res.sendFile(path.join(__dirname, "..", 'build', "login.html"));
-  res.send('get login');});
+app.get('/', (req, res) => {
+  res.send('successully connected to the server');
+});
 
 app.post('/login', passport.authenticate('local'), (req, res) => {
-  res.redirect('/');
+  res.send('successfully logged in');
 });
 
 app.get('/register', (req, res) => {
@@ -90,37 +94,83 @@ app.post('/newdoc', (req, res) => {
 });
 
 app.post('/updatedoc', (req, res) => {
+
   Document.findById(req.body.id, (err, doc) => {
     if (err) {
       console.error(err);
     } else {
       doc.body = req.body.body;
-      res.send('body updated');
+      doc.save()
+      .then(()=>{
+        console.log('body updated');
+        res.send('body updated');
+      });
     }
   });
 });
 
-app.use((req, res, next) => {
-  if (req.user) {
-    next();
-  } else {
-    res.redirect('/login');
-  }
+app.post('/addSharedDoc', (req, res) => {
+  console.log(req.body.id);
+  Document.findById(req.body.id, (err, doc) => {
+    if (err) {
+      console.log(err);
+    } else if (!doc){
+      res.send('error finding doc');
+    } else {
+      res.send(doc.body);
+    }
+  });
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, "..", 'build', 'index.dev.html'));
+app.get('/documents', (req, res) => {
+  Document.find()
+  .then((docs)=>{
+    res.send(docs);
+  })
+  .catch((error)=>{
+    res.send(error);
+  });
 });
 
 io.on('connection', function(socket) {
-  io.on('joinRoom', (roomName)=>{
+  let currentName = '';
+  console.log('connected to sockets');
+  io.emit('message', 'here');
+  socket.on('join room', (roomName)=>{
+    console.log('submitted join room request for: ', roomName);
+
+    currentName = roomName;
     socket.join(roomName);
+    io.in(roomName).clients((err, clients)=>{
+      console.log(clients);
+    });
+    io.to(roomName).emit('message', `someone successfully joined ${roomName}!`);
+    // socket.on('update', (contentState)=>{
+    //   io.to(roomName).emit('update', contentState);
+    // });
+
   });
-  io.on('update', (roomName, editorState) => {
-    io.to(roomName).emit('update', editorState);
+  socket.on('leave room', (roomName)=>{
+    console.log(`leaving ${roomName}`);
+    socket.leave(roomName);
+  });
+
+  socket.on('update', (contentState, selection) => {
+    console.log('receieved update request');
+    io.to(currentName).emit('update', contentState);
   });
 });
 
-app.listen(3000, function () {
+// app.use((req, res, next) => {
+//   if (req.user) {
+//     next();
+//   } else {
+//     console.log('HERE');
+//     res.send('error');
+//   }
+// });
+
+
+server.listen(3000, function () {
   console.log('Backend server for Electron App running on port 3000!');
 });
