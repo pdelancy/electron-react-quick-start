@@ -6,11 +6,21 @@ var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 const MongoStore = require('connect-mongo')(session);
+const User = require('./User');
+const Document = require('./Document');
 
-//Bodyparser parses fields sent in json format, axios send fields in json
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGODB_URI);
+
 app.use(bodyParser.json());
 
-//use passport to turn the user in to an id at the beginning and turn the id into an user at the end
+app.use(session({
+  secret: 'secret sauce',
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection
+  })
+}));
+
 passport.serializeUser(function(user, done) {
   done(null, user._id);
 });
@@ -33,46 +43,16 @@ passport.use(new LocalStrategy(function(username, password, done) {
 app.use(passport.initialize());
 app.use(passport.session());
 
-const User = require('./User');
-const Document = require('./Document');
-
-const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI);
-
-app.use(session({
-  secret: 'secret sauce',
-  store: new MongoStore({
-    mongooseConnection: mongoose.connection
-  })
-}));
-
 app.use(express.static(path.join(__dirname, 'build')));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-app.get('/login', (req, res) => {
-  // res.sendFile(path.join(__dirname, "..", 'build', "login.html"));
-  res.send('get login');
-});
-
-app.post('/login', passport.authenticate('local'), (req, res) => {
-  console.log('reqUser', req.user);
-  res.send(req.user);
-});
-
-app.get('/logout', function(req, res) {
-  req.logout();
-  res.send({success: true});
-});
-
 app.get('/register', (req, res) => {
-  // res.sendFile(path.join(__dirname, "..", 'build', "register.html"));
   res.send('get register');
 });
 
 app.post('/register', (req, res) => {
-  console.log('register body', req.body);
   const newUser = new User(req.body);
   newUser.save((err, result) => {
     if (err) {
@@ -83,8 +63,24 @@ app.post('/register', (req, res) => {
   });
 });
 
+app.get('/login', (req, res) => {
+  res.send('get login');
+});
+
+app.post('/login', passport.authenticate('local'), (req, res) => {
+  res.send(req.user);
+});
+
+app.use((req, res, next) => {
+  (req.user) ? next() : res.redirect('/');
+});
+
+app.get('/logout', function(req, res) {
+  req.logout();
+  res.send({success: true});
+});
+
 app.post('/getdocument', (req, res)=>{
-  console.log('inside get document');
   Document.findById(req.body.docid, (err, docs) => {
     if (err) {
       console.error(err);
@@ -96,7 +92,6 @@ app.post('/getdocument', (req, res)=>{
 });
 
 app.post('/getAllDocs', (req, res)=>{
-  console.log('inside get all docs user', req.user);
   Document.find({user: req.body.id}, (err, docs) => {
     if (err) {
       console.error(err);
@@ -125,11 +120,7 @@ app.post('/updatedoc', (req, res) => {
     } else {
       doc.body = req.body.body;
       doc.save((err, result)=>{
-        if (err){
-          res.send(err);
-        } else {
-          res.send('body updated');
-        }
+        (err) ? res.send(err) : res.send('body updated');
       });
     }
   });
@@ -137,31 +128,15 @@ app.post('/updatedoc', (req, res) => {
 
 app.post('/deletedoc', (req, res) => {
   Document.findByIdAndRemove(req.body.docid, (err, doc) => {
-    if (err) {
-      console.error(err);
-    } else {
-      res.send('Successfully deleted!');
-    }
+    (err) ? console.error(err) : res.send('Successfully deleted!');
   });
 });
 
 
 app.post('/addSharedDoc', (req, res) => {
   Document.findById(req.body.id, (err, doc) => {
-    if (err) {
-      console.error(err);
-    } else {
-      res.send(doc);
-    }
+    (err) ? console.error(err) : res.send(doc);
   });
-});
-
-app.use((req, res, next) => {
-  if (req.user) {
-    next();
-  } else {
-    res.redirect('/login');
-  }
 });
 
 app.listen(3000, function () {
