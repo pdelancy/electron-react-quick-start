@@ -58,17 +58,18 @@ class Main extends React.Component {
     });
   }
 
-  componentDidMount(){
+  componentWillMount(){
     axios.post('http://localhost:3000/getdocument', {
       docid: this.props.match.params.docid
     })
     .then(response=>{
-      console.log('response in main', JSON.parse(response.data.body));
+      console.log("response in main component will mount", response);
       this.setState({
         editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(response.data.body))),
         title: response.data.title,
         history: response.data.history
       });
+      console.log('state after set state', this.state);
     })
     .catch(err=>console.log(err));
   }
@@ -265,7 +266,7 @@ class Main extends React.Component {
     return(
       <RaisedButton
         backgroundColor = "#FFCA28"
-        onMouseDown = {()=>this.setState({showHistory: true})}
+        onMouseDown = {()=>this.setState({showHistory: !this.state.showHistory})}
         icon={<FontIcon className="material-icons"> history </FontIcon>}/>
     );
   }

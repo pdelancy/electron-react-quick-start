@@ -174,21 +174,29 @@ app.post('/updatedoc', (req, res) => {
   });
 });
 
-// app.post('/history', (req, res)=>{
-//   Document.findById(req.body.id, (err, doc)=>{
-//     if(err){
-//
-//     }
-//   })
-// });
+
+async function deleteSharedDoc(doc, contributor){
+  for(var user of contributor){
+    var foundUser = await User.findById(user);
+    foundUser.sharedDoc.filter((x)=>{x !== doc});
+  }
+  return sharedDoc;
+}
 
 app.post('/deletedoc', (req, res) => {
+  var docid;
+  var contributor;
   Document.findByIdAndRemove(req.body.docid, (err, doc) => {
     if (err) {
       console.error(err);
     } else {
+      docid = doc._id
+      contributor = doc.contributor.slice();
       res.send('Successfully deleted!');
     }
+  })
+  .then(()=>{
+
   });
 });
 

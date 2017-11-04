@@ -11,40 +11,67 @@ const myBlockTypes = DefaultDraftBlockRenderMap.merge(new Map({
   center: {
     wrapper: <div className = "center-align"/>
   }
-
 }));
+
+
+class MyEditor extends React.Component {
+  constructor(props) {
+    super(props);
+    // this.state = {editorState: EditorState.createEmpty()};
+    // this.onChange = (editorState) => this.setState({editorState});
+    this.state = {
+      open: false
+    };
+  }
+
+  render() {
+    var DatetoShow = new Date(parseInt(this.props.date));
+    console.log(DatetoShow);
+    console.log(typeof DatetoShow.toTimeString());
+    var historyContent = this.props.editorState;
+    var editorStateHistory = EditorState.createWithContent(convertFromRaw(JSON.parse(historyContent.EditorState)));
+    return (
+      <div>
+      <RaisedButton
+        backgroundColor = "#FFCA28"
+        onMouseDown = {()=>{this.setState({open: !this.state.open});}}
+        label = {DatetoShow.toString()}
+      />
+      {this.state.open ?
+          <Editor
+            blockRenderMap={myBlockTypes}
+            editorState={editorStateHistory}
+          /> : <div></div>
+            }
+          </div>
+    );
+  }
+}
+
 
 class ViewHistory extends React.Component {
   constructor(props) {
     super(props);
-  }
-
-  showContent(version){
-    return(
-      <Editor
-        ref = 'editor'
-        blockRenderMap={myBlockTypes}
-        customStyleMap = {this.state.inlineStyles}
-        editorState = {Object.value(version)}
-      />
-    );
+    console.log('props in view history', props.history);
   }
 
   render(){
     return(
       <div>
-      {this.state.history.map((version)=>{
+      <h5>Previous Versions</h5>
+      <ul>
+        {/* object keys: {Object.keys(this.props.history)} */}
+      { Object.keys(this.props.history).map((date)=>{
+        // console.log('date', date);
         return(
-          <RaisedButton
-            key = {Object.keys(version)}
-            backgroundColor = "#FFCA28"
-            onMouseDown = {(version)=>this.showContent(version)}
-            label = {Object.keys(version)}
-            content = {Object.value(version)}
-            />
+          <li key = {date} style = {{padding: '5px'}}>
+            <MyEditor date = {date} key = {date} editorState = {this.props.history[date]} />
+            <br></br>
+        </li>
         );
       })}
-      </div>
+    </ul>
+  </div>
     );
   }
 

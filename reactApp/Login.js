@@ -44,13 +44,13 @@ class Login extends React.Component {
           placeholder="password"
           value={this.state.password}
           onChange={(e)=>(this.setState({password: e.target.value}))}/>
-        <div className = 'memberLink' style={{margin: '20'}}>
+        <div className = 'memberLink' style={{margin: '20px'}}>
           <button onClick={this.login.bind(this)}>
             Login
           </button>
         </div>
         <Link to='/register'>
-          <div style={{padding: '10'}}>Not a member? Click Here to Register</div>
+          <div style={{padding: '10px'}}>Not a member? Click Here to Register</div>
         </Link>
         {/* <Route path="/editor" component = {Main}/> */}
       </div>

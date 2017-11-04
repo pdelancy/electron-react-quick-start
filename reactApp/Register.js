@@ -48,7 +48,7 @@ class Register extends React.Component {
           </button>
         </div>
         <Link to='/'>
-          <div style={{padding: '10'}}>Back to Login</div>
+          <div style={{padding: '10px'}}>Back to Login</div>
         </Link>
       </div>
     );
